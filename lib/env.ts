@@ -18,5 +18,12 @@ if (!url || !publishableKey) {
 export const SUPABASE_URL = url
 export const SUPABASE_PUBLISHABLE_KEY = publishableKey
 
-/** Dipakai untuk menyusun link undangan yang bisa dibuka di perangkat lain. */
+/**
+ * Domain kanonik, opsional.
+ *
+ * Kalau di-set, link undangan selalu memakai domain ini. Kalau dibiarkan
+ * kosong, link dibangun dari origin request yang sedang berjalan — itu yang
+ * membuat preview deployment Vercel (URL-nya berubah tiap commit) dan localhost
+ * tetap menghasilkan link yang benar tanpa konfigurasi apa pun.
+ */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? ""
