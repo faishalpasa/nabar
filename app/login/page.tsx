@@ -1,14 +1,14 @@
-import { BrandMark } from "@/components/brand";
-import { GoogleSignInButton } from "@/components/google-sign-in-button";
+import { BrandMark } from "@/components/brand"
+import { GoogleSignInButton } from "@/components/google-sign-in-button"
 
-export const metadata = { title: "Masuk · Nabung Bareng" };
+export const metadata = { title: "Masuk · Nabung Bareng" }
 
-export default async function LoginPage({
+const LoginPage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
-}) {
-  const { next, error } = await searchParams;
+  searchParams: Promise<{ next?: string; error?: string }>
+}) => {
+  const { next, error } = await searchParams
 
   return (
     <main className="flex flex-1 flex-col justify-between px-6 pt-20 pb-10">
@@ -17,7 +17,9 @@ export default async function LoginPage({
           <BrandMark className="size-11" />
         </div>
 
-        <h1 className="text-2xl font-extrabold tracking-tight">Nabung Bareng</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">
+          Nabung Bareng
+        </h1>
         <p className="text-muted-foreground mt-2 max-w-[24ch] text-[15px] leading-relaxed">
           Catat tabungan dan kas bareng teman, lengkap dengan bukti transfer.
         </p>
@@ -36,10 +38,12 @@ export default async function LoginPage({
         <GoogleSignInButton next={next} />
 
         <p className="text-muted-foreground text-center text-xs leading-relaxed">
-          Transfer tetap kamu lakukan manual. Aplikasi ini mencatat dan menyimpan
-          buktinya.
+          Transfer tetap kamu lakukan manual. Aplikasi ini mencatat dan
+          menyimpan buktinya.
         </p>
       </div>
     </main>
-  );
+  )
 }
+
+export default LoginPage

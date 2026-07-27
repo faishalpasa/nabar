@@ -1,103 +1,103 @@
-"use client";
+"use client"
 
-import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { ImagePlus, Info, Loader2, X } from "lucide-react";
-import { toast } from "sonner";
+import { ImagePlus, Info, Loader2, X } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useRef, useState, useTransition } from "react"
+import { toast } from "sonner"
 
-import { recordTransaction } from "@/app/actions/transactions";
-import { AmountInput } from "@/components/amount-input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/lib/supabase/client";
-import { formatRupiah } from "@/lib/format";
-import type { TxType } from "@/lib/types";
+import { recordTransaction } from "@/app/actions/transactions"
+import { AmountInput } from "@/components/amount-input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { formatRupiah } from "@/lib/format"
+import { createClient } from "@/lib/supabase/client"
+import type { TxType } from "@/lib/types"
 
-const MAX_BYTES = 5 * 1024 * 1024;
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/heic"];
+const MAX_BYTES = 5 * 1024 * 1024
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/heic"]
 
 type Props = {
-  groupId: string;
-  groupName: string;
-  userId: string;
-  type: TxType;
-  isOwner: boolean;
-  balance: string;
-};
+  groupId: string
+  groupName: string
+  userId: string
+  type: TxType
+  isOwner: boolean
+  balance: string
+}
 
-export function RecordTransactionForm({
+export const RecordTransactionForm = ({
   groupId,
   groupName,
   userId,
   type,
   isOwner,
   balance,
-}: Props) {
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [amount, setAmount] = useState(0);
-  const [note, setNote] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [pending, startTransition] = useTransition();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
+}: Props) => {
+  const [file, setFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [amount, setAmount] = useState(0)
+  const [note, setNote] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [pending, startTransition] = useTransition()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
 
-  const isWithdrawal = type === "withdrawal";
-  const noteRequired = isWithdrawal;
-  const busy = uploading || pending;
+  const isWithdrawal = type === "withdrawal"
+  const noteRequired = isWithdrawal
+  const busy = uploading || pending
 
   const canSubmit =
-    amount > 0 && file !== null && (!noteRequired || note.trim().length > 0);
+    amount > 0 && file !== null && (!noteRequired || note.trim().length > 0)
 
   function pickFile(selected: File | null) {
-    if (!selected) return;
+    if (!selected) return
 
     if (!ACCEPTED.includes(selected.type)) {
       return toast.error("Format file tidak didukung", {
         description: "Gunakan JPG, PNG, WEBP, atau HEIC.",
-      });
+      })
     }
     if (selected.size > MAX_BYTES) {
       return toast.error("Ukuran file terlalu besar", {
         description: "Maksimal 5 MB per foto.",
-      });
+      })
     }
 
-    setFile(selected);
-    setPreviewUrl(URL.createObjectURL(selected));
+    setFile(selected)
+    setPreviewUrl(URL.createObjectURL(selected))
   }
 
   function clearFile() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setFile(null);
-    setPreviewUrl(null);
-    if (inputRef.current) inputRef.current.value = "";
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setFile(null)
+    setPreviewUrl(null)
+    if (inputRef.current) inputRef.current.value = ""
   }
 
   async function submit() {
-    if (!file) return;
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
 
     // Path WAJIB berpola {group_id}/{user_id}/{nama} — baik policy Storage
     // maupun trigger transactions_before_insert memverifikasinya, supaya tidak
     // ada yang bisa mengklaim bukti transfer orang lain.
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${groupId}/${userId}/${crypto.randomUUID()}.${ext}`;
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg"
+    const path = `${groupId}/${userId}/${crypto.randomUUID()}.${ext}`
 
-    const supabase = createClient();
+    const supabase = createClient()
     const { error: uploadError } = await supabase.storage
       .from("proofs")
-      .upload(path, file, { contentType: file.type, upsert: false });
+      .upload(path, file, { contentType: file.type, upsert: false })
 
-    setUploading(false);
+    setUploading(false)
 
     if (uploadError) {
       return toast.error("Gagal mengunggah bukti", {
         description: uploadError.message,
-      });
+      })
     }
 
     startTransition(async () => {
@@ -107,14 +107,14 @@ export function RecordTransactionForm({
         amount,
         proofPath: path,
         note,
-      });
+      })
 
       if (error) {
         // File sudah terunggah tapi transaksinya gagal. Bersihkan supaya tidak
         // meninggalkan objek nyangkut di bucket.
-        await supabase.storage.from("proofs").remove([path]);
-        toast.error("Gagal menyimpan transaksi", { description: error });
-        return;
+        await supabase.storage.from("proofs").remove([path])
+        toast.error("Gagal menyimpan transaksi", { description: error })
+        return
       }
 
       toast.success(
@@ -123,9 +123,9 @@ export function RecordTransactionForm({
           : isOwner
             ? "Setoran tercatat dan langsung terverifikasi"
             : "Setoran terkirim, menunggu persetujuan owner",
-      );
-      router.push(`/g/${groupId}`);
-    });
+      )
+      router.push(`/g/${groupId}`)
+    })
   }
 
   return (
@@ -134,8 +134,9 @@ export function RecordTransactionForm({
         <p className="text-muted-foreground text-[13px] leading-relaxed">
           {isWithdrawal ? (
             <>
-              Tarik dana dari <span className="text-foreground font-semibold">{groupName}</span>.
-              Saldo sekarang{" "}
+              Tarik dana dari{" "}
+              <span className="text-foreground font-semibold">{groupName}</span>
+              . Saldo sekarang{" "}
               <span className="text-foreground tnum font-semibold">
                 {formatRupiah(balance)}
               </span>
@@ -144,7 +145,9 @@ export function RecordTransactionForm({
           ) : (
             <>
               Transfer dulu secara manual, lalu catat di sini beserta bukti
-              transfernya ke <span className="text-foreground font-semibold">{groupName}</span>.
+              transfernya ke{" "}
+              <span className="text-foreground font-semibold">{groupName}</span>
+              .
             </>
           )}
         </p>
@@ -205,7 +208,9 @@ export function RecordTransactionForm({
               <span className="bg-muted text-muted-foreground grid size-10 place-items-center rounded-xl">
                 <ImagePlus className="size-5" />
               </span>
-              <span className="text-sm font-semibold">Ambil atau pilih foto</span>
+              <span className="text-sm font-semibold">
+                Ambil atau pilih foto
+              </span>
               <span className="text-muted-foreground text-xs">
                 JPG, PNG, WEBP, atau HEIC · maks 5 MB
               </span>
@@ -214,7 +219,10 @@ export function RecordTransactionForm({
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="note" className="flex items-center gap-2 text-[13px] font-semibold">
+          <Label
+            htmlFor="note"
+            className="flex items-center gap-2 text-[13px] font-semibold"
+          >
             {isWithdrawal ? "Keterangan pengeluaran" : "Catatan"}
             {noteRequired ? (
               <span className="text-bad bg-bad-surface rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
@@ -266,7 +274,6 @@ export function RecordTransactionForm({
                 : "Kirim setoran"}
         </Button>
       </div>
-
     </div>
-  );
+  )
 }

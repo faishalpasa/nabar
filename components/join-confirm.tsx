@@ -1,34 +1,34 @@
-"use client";
+"use client"
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation"
+import { useTransition } from "react"
+import { toast } from "sonner"
 
-import { acceptInvite } from "@/app/actions/invitations";
-import { Button } from "@/components/ui/button";
+import { acceptInvite } from "@/app/actions/invitations"
+import { Button } from "@/components/ui/button"
 
-export function JoinConfirm({
+export const JoinConfirm = ({
   token,
   groupName,
 }: {
-  token: string;
-  groupName: string;
-}) {
-  const [pending, startTransition] = useTransition();
-  const router = useRouter();
+  token: string
+  groupName: string
+}) => {
+  const [pending, startTransition] = useTransition()
+  const router = useRouter()
 
   function join() {
     startTransition(async () => {
-      const result = await acceptInvite(token);
+      const result = await acceptInvite(token)
 
       if ("error" in result) {
-        toast.error("Gagal bergabung", { description: result.error });
-        return;
+        toast.error("Gagal bergabung", { description: result.error })
+        return
       }
 
-      toast.success(`Kamu bergabung ke ${groupName}`);
-      router.replace(`/g/${result.groupId}`);
-    });
+      toast.success(`Kamu bergabung ke ${groupName}`)
+      router.replace(`/g/${result.groupId}`)
+    })
   }
 
   return (
@@ -54,9 +54,9 @@ export function JoinConfirm({
       </div>
 
       <p className="text-muted-foreground text-center text-xs leading-relaxed">
-        Setelah bergabung, kamu bisa melihat seluruh riwayat dan kontribusi semua
-        member.
+        Setelah bergabung, kamu bisa melihat seluruh riwayat dan kontribusi
+        semua member.
       </p>
     </div>
-  );
+  )
 }

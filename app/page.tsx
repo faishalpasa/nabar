@@ -1,30 +1,30 @@
-import Link from "next/link";
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Wallet } from "lucide-react"
+import Link from "next/link"
 
-import { AccountMenu } from "@/components/account-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { createClient, getUser } from "@/lib/supabase/server";
-import { formatDate, formatPercent, formatRupiah, initials } from "@/lib/format";
-import type { GroupOverview } from "@/lib/types";
+import { AccountMenu } from "@/components/account-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
+import { formatDate, formatPercent, formatRupiah, initials } from "@/lib/format"
+import { createClient, getUser } from "@/lib/supabase/server"
+import type { GroupOverview } from "@/lib/types"
 
-export const metadata = { title: "Tabungan saya · Nabung Bareng" };
+export const metadata = { title: "Tabungan saya · Nabung Bareng" }
 
-export default async function HomePage() {
-  const user = await getUser();
-  const supabase = await createClient();
+const HomePage = async () => {
+  const user = await getUser()
+  const supabase = await createClient()
 
   // RLS membatasi view ini ke grup yang user ikuti — tidak perlu filter manual.
   const { data: groups, error } = await supabase
     .from("group_overview")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
 
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ??
     user?.email?.split("@")[0] ??
-    "Kamu";
-  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+    "Kamu"
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined
 
   return (
     <main className="flex flex-1 flex-col">
@@ -72,13 +72,13 @@ export default async function HomePage() {
         <Plus className="size-6" strokeWidth={2.5} />
       </Link>
     </main>
-  );
+  )
 }
 
-function GroupCard({ group }: { group: GroupOverview }) {
-  const hasGoal = group.goal_amount !== null;
-  const percent = formatPercent(group.progress);
-  const deadline = formatDate(group.goal_deadline);
+const GroupCard = ({ group }: { group: GroupOverview }) => {
+  const hasGoal = group.goal_amount !== null
+  const percent = formatPercent(group.progress)
+  const deadline = formatDate(group.goal_deadline)
 
   return (
     <Link
@@ -119,19 +119,19 @@ function GroupCard({ group }: { group: GroupOverview }) {
         </p>
       )}
     </Link>
-  );
+  )
 }
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <div className="bg-accent text-primary mb-4 grid size-14 place-items-center rounded-2xl">
-        <Wallet className="size-6" />
-      </div>
-      <h2 className="font-bold">Belum ada tabungan</h2>
-      <p className="text-muted-foreground mt-1.5 max-w-[28ch] text-sm leading-relaxed">
-        Buat tabungan pertamamu, atau tunggu diundang lewat link dari temanmu.
-      </p>
+const EmptyState = () => (
+  <div className="flex flex-col items-center px-6 py-16 text-center">
+    <div className="bg-accent text-primary mb-4 grid size-14 place-items-center rounded-2xl">
+      <Wallet className="size-6" />
     </div>
-  );
-}
+    <h2 className="font-bold">Belum ada tabungan</h2>
+    <p className="text-muted-foreground mt-1.5 max-w-[28ch] text-sm leading-relaxed">
+      Buat tabungan pertamamu, atau tunggu diundang lewat link dari temanmu.
+    </p>
+  </div>
+)
+
+export default HomePage

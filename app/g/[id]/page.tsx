@@ -1,45 +1,45 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
+import Link from "next/link"
+import { notFound } from "next/navigation"
 
-import { AppBar } from "@/components/app-bar";
-import { GroupSummary } from "@/components/group-summary";
-import { HistoryList } from "@/components/history-list";
-import { InviteButton } from "@/components/invite-button";
-import { MemberList } from "@/components/member-list";
-import { buttonVariants } from "@/components/ui/button";
-import { createClient, getUser } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
+import { AppBar } from "@/components/app-bar"
+import { GroupSummary } from "@/components/group-summary"
+import { HistoryList } from "@/components/history-list"
+import { InviteButton } from "@/components/invite-button"
+import { MemberList } from "@/components/member-list"
+import { buttonVariants } from "@/components/ui/button"
+import { createClient, getUser } from "@/lib/supabase/server"
+import { cn } from "@/lib/utils"
 
-type Params = { id: string };
-type Search = { tab?: string };
+type Params = { id: string }
+type Search = { tab?: string }
 
-export default async function GroupPage({
+const GroupPage = async ({
   params,
   searchParams,
 }: {
-  params: Promise<Params>;
-  searchParams: Promise<Search>;
-}) {
-  const { id } = await params;
-  const { tab } = await searchParams;
-  const activeTab = tab === "member" ? "member" : "history";
+  params: Promise<Params>
+  searchParams: Promise<Search>
+}) => {
+  const { id } = await params
+  const { tab } = await searchParams
+  const activeTab = tab === "member" ? "member" : "history"
 
-  const user = await getUser();
-  const supabase = await createClient();
+  const user = await getUser()
+  const supabase = await createClient()
 
   const { data: group } = await supabase
     .from("group_overview")
     .select("*")
     .eq("group_id", id)
-    .maybeSingle();
+    .maybeSingle()
 
   // RLS menyembunyikan grup yang bukan milik user, jadi "tidak ada" dan "tidak
   // punya akses" sama-sama berujung 404 — dan itu memang yang diinginkan:
   // keberadaan sebuah tabungan tidak bocor ke orang luar.
-  if (!group) notFound();
+  if (!group) notFound()
 
-  const isOwner = user?.id === group.owner_id;
+  const isOwner = user?.id === group.owner_id
 
   const [{ data: feed }, { data: members }] = await Promise.all([
     supabase
@@ -52,7 +52,7 @@ export default async function GroupPage({
       .select("*")
       .eq("group_id", id)
       .order("total_contributed", { ascending: false }),
-  ]);
+  ])
 
   return (
     <main className="flex flex-1 flex-col">
@@ -114,31 +114,31 @@ export default async function GroupPage({
         )}
       </div>
     </main>
-  );
+  )
 }
 
-function TabLink({
+const TabLink = ({
   href,
   active,
   children,
 }: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "focus-visible:ring-ring -mb-px border-b-2 px-1 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
-        "mr-6",
-        active
-          ? "border-primary text-foreground"
-          : "text-muted-foreground border-transparent",
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
+  href: string
+  active: boolean
+  children: React.ReactNode
+}) => (
+  <Link
+    href={href}
+    aria-current={active ? "page" : undefined}
+    className={cn(
+      "focus-visible:ring-ring -mb-px border-b-2 px-1 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+      "mr-6",
+      active
+        ? "border-primary text-foreground"
+        : "text-muted-foreground border-transparent",
+    )}
+  >
+    {children}
+  </Link>
+)
+
+export default GroupPage

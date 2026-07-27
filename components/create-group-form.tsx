@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import { useState, useTransition } from "react";
-import { CalendarRange, Repeat, Target } from "lucide-react";
-import { toast } from "sonner";
+import { CalendarRange, Repeat, Target } from "lucide-react"
+import { useState, useTransition } from "react"
+import { toast } from "sonner"
 
-import { createGroup } from "@/app/actions/groups";
-import { AmountInput } from "@/components/amount-input";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import type { GroupType } from "@/lib/types";
+import { createGroup } from "@/app/actions/groups"
+import { AmountInput } from "@/components/amount-input"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import type { GroupType } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 const TYPES: {
-  value: GroupType;
-  label: string;
-  hint: string;
-  icon: typeof Target;
+  value: GroupType
+  label: string
+  hint: string
+  icon: typeof Target
 }[] = [
   {
     value: "one_time",
@@ -30,21 +30,21 @@ const TYPES: {
     hint: "Kas yang jalan terus tanpa target, misalnya kas RT",
     icon: Repeat,
   },
-];
+]
 
-export function CreateGroupForm() {
-  const [type, setType] = useState<GroupType>("one_time");
-  const [pending, startTransition] = useTransition();
+export const CreateGroupForm = () => {
+  const [type, setType] = useState<GroupType>("one_time")
+  const [pending, startTransition] = useTransition()
 
   function onSubmit(formData: FormData) {
     startTransition(async () => {
-      const result = await createGroup(formData);
+      const result = await createGroup(formData)
       // createGroup melakukan redirect saat sukses, jadi kode di bawah hanya
       // tercapai kalau gagal.
       if (result?.error) {
-        toast.error("Gagal membuat tabungan", { description: result.error });
+        toast.error("Gagal membuat tabungan", { description: result.error })
       }
-    });
+    })
   }
 
   return (
@@ -71,8 +71,8 @@ export function CreateGroupForm() {
 
           <div className="flex flex-col gap-2">
             {TYPES.map((option) => {
-              const Icon = option.icon;
-              const selected = type === option.value;
+              const Icon = option.icon
+              const selected = type === option.value
 
               return (
                 <button
@@ -112,7 +112,7 @@ export function CreateGroupForm() {
                     </span>
                   </span>
                 </button>
-              );
+              )
             })}
           </div>
         </fieldset>
@@ -167,5 +167,5 @@ export function CreateGroupForm() {
         </Button>
       </div>
     </form>
-  );
+  )
 }

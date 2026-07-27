@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Check, Eye, Pencil, Receipt, X } from "lucide-react";
-import { toast } from "sonner";
+import { Check, Eye, Pencil, Receipt, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState, useTransition } from "react"
+import { toast } from "sonner"
 
 import {
   approveTransaction,
   getProofUrl,
   rejectTransaction,
   unapproveTransaction,
-} from "@/app/actions/transactions";
-import { StatusBadge } from "@/components/status-badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+} from "@/app/actions/transactions"
+import { StatusBadge } from "@/components/status-badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -21,74 +21,79 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { formatDateTime, formatSigned, initials } from "@/lib/format";
-import type { TransactionFeedRow } from "@/lib/types";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { formatDateTime, formatSigned, initials } from "@/lib/format"
+import type { TransactionFeedRow } from "@/lib/types"
 
 type Props = {
-  rows: TransactionFeedRow[];
-  groupId: string;
-  isOwner: boolean;
-  currentUserId: string;
-};
+  rows: TransactionFeedRow[]
+  groupId: string
+  isOwner: boolean
+  currentUserId: string
+}
 
 type ReasonTarget = {
-  tx: TransactionFeedRow;
-  mode: "reject" | "unapprove";
-};
+  tx: TransactionFeedRow
+  mode: "reject" | "unapprove"
+}
 
-export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
-  const [reasonTarget, setReasonTarget] = useState<ReasonTarget | null>(null);
-  const [reason, setReason] = useState("");
-  const [pending, startTransition] = useTransition();
-  const router = useRouter();
+export const HistoryList = ({
+  rows,
+  groupId,
+  isOwner,
+  currentUserId,
+}: Props) => {
+  const [reasonTarget, setReasonTarget] = useState<ReasonTarget | null>(null)
+  const [reason, setReason] = useState("")
+  const [pending, startTransition] = useTransition()
+  const router = useRouter()
 
   function approve(tx: TransactionFeedRow) {
     startTransition(async () => {
-      const { error } = await approveTransaction(tx.id, groupId);
+      const { error } = await approveTransaction(tx.id, groupId)
       if (error) {
-        toast.error("Gagal menyetujui", { description: error });
-        return;
+        toast.error("Gagal menyetujui", { description: error })
+        return
       }
-      toast.success(`Setoran ${tx.display_name} disetujui`);
-      router.refresh();
-    });
+      toast.success(`Setoran ${tx.display_name} disetujui`)
+      router.refresh()
+    })
   }
 
   function submitReason() {
-    if (!reasonTarget) return;
-    const { tx, mode } = reasonTarget;
+    if (!reasonTarget) return
+    const { tx, mode } = reasonTarget
 
     startTransition(async () => {
       const { error } =
         mode === "reject"
           ? await rejectTransaction(tx.id, groupId, reason)
-          : await unapproveTransaction(tx.id, groupId, reason);
+          : await unapproveTransaction(tx.id, groupId, reason)
 
       if (error) {
         toast.error(mode === "reject" ? "Gagal menolak" : "Gagal membatalkan", {
           description: error,
-        });
-        return;
+        })
+        return
       }
 
       toast.success(
         mode === "reject"
           ? `Setoran ${tx.display_name} ditolak`
           : `Persetujuan ${tx.display_name} dibatalkan`,
-      );
-      setReasonTarget(null);
-      setReason("");
-      router.refresh();
-    });
+      )
+      setReasonTarget(null)
+      setReason("")
+      router.refresh()
+    })
   }
 
   async function viewProof(tx: TransactionFeedRow) {
-    const result = await getProofUrl(tx.proof_path);
-    if ("error" in result) return toast.error(result.error);
-    window.open(result.url, "_blank", "noopener,noreferrer");
+    const result = await getProofUrl(tx.proof_path)
+    if ("error" in result) return toast.error(result.error)
+    window.open(result.url, "_blank", "noopener,noreferrer")
   }
 
   if (rows.length === 0) {
@@ -102,24 +107,26 @@ export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
           Setor pertama kali, lalu unggah bukti transfernya di sini.
         </p>
       </div>
-    );
+    )
   }
 
   return (
     <>
       <ul className="divide-y">
         {rows.map((tx) => {
-          const isMine = tx.user_id === currentUserId;
-          const isWithdrawal = tx.type === "withdrawal";
-          const canApprove = isOwner && tx.status === "pending";
+          const isMine = tx.user_id === currentUserId
+          const isWithdrawal = tx.type === "withdrawal"
+          const canApprove = isOwner && tx.status === "pending"
           const canUnapprove =
-            isOwner && tx.status === "verified" && !isWithdrawal && !isMine;
-          const canEdit = isOwner && isMine && tx.status !== "rejected";
+            isOwner && tx.status === "verified" && !isWithdrawal && !isMine
+          const canEdit = isOwner && isMine && tx.status !== "rejected"
 
           return (
             <li key={tx.id} className="flex gap-3 py-3.5">
               <Avatar className="mt-0.5 size-9 shrink-0">
-                {tx.avatar_url ? <AvatarImage src={tx.avatar_url} alt="" /> : null}
+                {tx.avatar_url ? (
+                  <AvatarImage src={tx.avatar_url} alt="" />
+                ) : null}
                 <AvatarFallback className="text-[11px] font-semibold">
                   {initials(tx.display_name)}
                 </AvatarFallback>
@@ -147,7 +154,9 @@ export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
                     <span
                       className="tnum text-sm font-bold"
                       style={
-                        isWithdrawal ? { color: "var(--muted-foreground)" } : undefined
+                        isWithdrawal
+                          ? { color: "var(--muted-foreground)" }
+                          : undefined
                       }
                     >
                       {formatSigned(tx.signed_amount)}
@@ -208,8 +217,8 @@ export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
                         variant="outline"
                         disabled={pending}
                         onClick={() => {
-                          setReason("");
-                          setReasonTarget({ tx, mode: "reject" });
+                          setReason("")
+                          setReasonTarget({ tx, mode: "reject" })
                         }}
                         className="h-7 gap-1.5 rounded-lg px-2.5 text-xs font-bold"
                       >
@@ -225,8 +234,8 @@ export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
                       variant="ghost"
                       disabled={pending}
                       onClick={() => {
-                        setReason("");
-                        setReasonTarget({ tx, mode: "unapprove" });
+                        setReason("")
+                        setReasonTarget({ tx, mode: "unapprove" })
                       }}
                       className="text-bad h-7 gap-1.5 rounded-lg px-2 text-xs"
                     >
@@ -237,14 +246,14 @@ export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
                 </div>
               </div>
             </li>
-          );
+          )
         })}
       </ul>
 
       <Dialog
         open={reasonTarget !== null}
         onOpenChange={(open) => {
-          if (!open) setReasonTarget(null);
+          if (!open) setReasonTarget(null)
         }}
       >
         <DialogContent className="max-w-[21rem] rounded-2xl">
@@ -299,5 +308,5 @@ export function HistoryList({ rows, groupId, isOwner, currentUserId }: Props) {
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

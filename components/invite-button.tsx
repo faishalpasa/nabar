@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { useState, useTransition } from "react";
-import { Check, Copy, UserPlus } from "lucide-react";
-import { toast } from "sonner";
+import { Check, Copy, UserPlus } from "lucide-react"
+import { useState, useTransition } from "react"
+import { toast } from "sonner"
 
-import { createInvite } from "@/app/actions/invitations";
-import { Button } from "@/components/ui/button";
+import { createInvite } from "@/app/actions/invitations"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -13,35 +13,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 
-export function InviteButton({ groupId }: { groupId: string }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [pending, startTransition] = useTransition();
+export const InviteButton = ({ groupId }: { groupId: string }) => {
+  const [url, setUrl] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [pending, startTransition] = useTransition()
 
   function generate() {
     startTransition(async () => {
-      const result = await createInvite(groupId);
+      const result = await createInvite(groupId)
       if ("error" in result) {
-        toast.error("Gagal membuat undangan", { description: result.error });
-        return;
+        toast.error("Gagal membuat undangan", { description: result.error })
+        return
       }
-      setCopied(false);
-      setUrl(result.url);
-    });
+      setCopied(false)
+      setUrl(result.url)
+    })
   }
 
   async function copy() {
-    if (!url) return;
+    if (!url) return
     try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      toast.success("Link undangan disalin");
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      toast.success("Link undangan disalin")
     } catch {
       toast.error("Tidak bisa menyalin otomatis", {
         description: "Salin manual dari kotak di atas.",
-      });
+      })
     }
   }
 
@@ -57,7 +57,10 @@ export function InviteButton({ groupId }: { groupId: string }) {
         {pending ? "Membuat link…" : "Undang member"}
       </Button>
 
-      <Dialog open={url !== null} onOpenChange={(open) => !open && setUrl(null)}>
+      <Dialog
+        open={url !== null}
+        onOpenChange={(open) => !open && setUrl(null)}
+      >
         <DialogContent className="max-w-[21rem] rounded-2xl">
           <DialogHeader>
             <DialogTitle>Link undangan siap</DialogTitle>
@@ -81,13 +84,20 @@ export function InviteButton({ groupId }: { groupId: string }) {
             >
               Tutup
             </Button>
-            <Button className="flex-1 gap-2 rounded-xl font-bold" onClick={copy}>
-              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+            <Button
+              className="flex-1 gap-2 rounded-xl font-bold"
+              onClick={copy}
+            >
+              {copied ? (
+                <Check className="size-4" />
+              ) : (
+                <Copy className="size-4" />
+              )}
               {copied ? "Tersalin" : "Salin link"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

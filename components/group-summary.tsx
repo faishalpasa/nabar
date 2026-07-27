@@ -1,11 +1,11 @@
-import { Progress } from "@/components/ui/progress";
-import { formatDate, formatPercent, formatRupiah } from "@/lib/format";
-import type { GroupOverview } from "@/lib/types";
+import { Progress } from "@/components/ui/progress"
+import { formatDate, formatPercent, formatRupiah } from "@/lib/format"
+import type { GroupOverview } from "@/lib/types"
 
-export function GroupSummary({ group }: { group: GroupOverview }) {
-  const hasGoal = group.goal_amount !== null;
-  const deadline = formatDate(group.goal_deadline);
-  const isNegative = Number(group.balance) < 0;
+export const GroupSummary = ({ group }: { group: GroupOverview }) => {
+  const hasGoal = group.goal_amount !== null
+  const deadline = formatDate(group.goal_deadline)
+  const isNegative = Number(group.balance) < 0
 
   return (
     <section className="border-b px-4 pt-5 pb-4">
@@ -50,5 +50,5 @@ export function GroupSummary({ group }: { group: GroupOverview }) {
         </div>
       </dl>
     </section>
-  );
+  )
 }

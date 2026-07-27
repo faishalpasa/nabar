@@ -1,30 +1,30 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+import { useState } from "react"
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { formatPlain, parseAmount } from "@/lib/format";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { formatPlain, parseAmount } from "@/lib/format"
 
 type Props = {
-  id: string;
-  name: string;
-  label: string;
-  optional?: boolean;
-  placeholder?: string;
-  required?: boolean;
-  autoFocus?: boolean;
+  id: string
+  name: string
+  label: string
+  optional?: boolean
+  placeholder?: string
+  required?: boolean
+  autoFocus?: boolean
   /**
    * Nilai numerik. Kalau diisi bersama onValueChange, komponen jadi controlled;
    * kalau tidak, ia mengelola state sendiri dan nilainya ikut terkirim lewat
    * FormData karena atribut `name`.
    */
-  value?: number;
-  onValueChange?: (value: number) => void;
-};
+  value?: number
+  onValueChange?: (value: number) => void
+}
 
 /** Input nominal Rupiah dengan pemisah ribuan otomatis. */
-export function AmountInput({
+export const AmountInput = ({
   id,
   name,
   label,
@@ -34,17 +34,17 @@ export function AmountInput({
   autoFocus,
   value,
   onValueChange,
-}: Props) {
-  const [internal, setInternal] = useState(0);
+}: Props) => {
+  const [internal, setInternal] = useState(0)
 
-  const controlled = value !== undefined && onValueChange !== undefined;
-  const current = controlled ? value : internal;
-  const display = current === 0 ? "" : formatPlain(current);
+  const controlled = value !== undefined && onValueChange !== undefined
+  const current = controlled ? value : internal
+  const display = current === 0 ? "" : formatPlain(current)
 
   function handleChange(raw: string) {
-    const next = parseAmount(raw);
-    if (controlled) onValueChange(next);
-    else setInternal(next);
+    const next = parseAmount(raw)
+    if (controlled) onValueChange(next)
+    else setInternal(next)
   }
 
   return (
@@ -79,5 +79,5 @@ export function AmountInput({
         />
       </div>
     </div>
-  );
+  )
 }

@@ -1,31 +1,31 @@
-import { cn } from "@/lib/utils";
-import type { TxStatus, TxType } from "@/lib/types";
+import type { TxStatus, TxType } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 const STYLES = {
   verified: "bg-ok-surface text-ok",
   pending: "bg-warn-surface text-warn",
   rejected: "bg-bad-surface text-bad",
   withdrawal: "bg-neutral-surface text-foreground",
-} as const;
+} as const
 
 const LABELS = {
   verified: "Terverifikasi",
   pending: "Menunggu",
   rejected: "Ditolak",
   withdrawal: "Tarik dana",
-} as const;
+} as const
 
 /** Withdrawal punya badge sendiri — statusnya selalu verified, jadi tidak informatif. */
-export function StatusBadge({
+export const StatusBadge = ({
   status,
   type,
   className,
 }: {
-  status: TxStatus;
-  type: TxType;
-  className?: string;
-}) {
-  const key = type === "withdrawal" ? "withdrawal" : status;
+  status: TxStatus
+  type: TxType
+  className?: string
+}) => {
+  const key = type === "withdrawal" ? "withdrawal" : status
 
   return (
     <span
@@ -37,5 +37,5 @@ export function StatusBadge({
     >
       {LABELS[key]}
     </span>
-  );
+  )
 }

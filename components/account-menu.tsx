@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -13,19 +13,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { createClient } from "@/lib/supabase/client";
+} from "@/components/ui/dialog"
+import { createClient } from "@/lib/supabase/client"
 
-export function AccountMenu({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const router = useRouter();
+export const AccountMenu = ({ children }: { children: React.ReactNode }) => {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const router = useRouter()
 
   async function signOut() {
-    setBusy(true);
-    await createClient().auth.signOut();
+    setBusy(true)
+    await createClient().auth.signOut()
     // refresh() agar middleware mengevaluasi ulang sesi dan mengarahkan ke /login
-    router.refresh();
+    router.refresh()
   }
 
   return (
@@ -65,5 +65,5 @@ export function AccountMenu({ children }: { children: React.ReactNode }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

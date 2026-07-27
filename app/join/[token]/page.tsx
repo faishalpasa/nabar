@@ -1,19 +1,19 @@
-import Link from "next/link";
-import { CalendarRange, Target, TriangleAlert } from "lucide-react";
+import { CalendarRange, Target, TriangleAlert } from "lucide-react"
+import Link from "next/link"
 
-import { getInvitationPreview } from "@/app/actions/invitations";
-import { BrandMark } from "@/components/brand";
-import { GoogleSignInButton } from "@/components/google-sign-in-button";
-import { JoinConfirm } from "@/components/join-confirm";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { getUser } from "@/lib/supabase/server";
-import { formatDate, formatRupiah } from "@/lib/format";
-import type { InvitationState } from "@/lib/types";
+import { getInvitationPreview } from "@/app/actions/invitations"
+import { BrandMark } from "@/components/brand"
+import { GoogleSignInButton } from "@/components/google-sign-in-button"
+import { JoinConfirm } from "@/components/join-confirm"
+import { buttonVariants } from "@/components/ui/button"
+import { formatDate, formatRupiah } from "@/lib/format"
+import { getUser } from "@/lib/supabase/server"
+import type { InvitationState } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
-export const metadata = { title: "Undangan · Nabung Bareng" };
+export const metadata = { title: "Undangan · Nabung Bareng" }
 
-const CTA = "h-12 w-full rounded-xl text-[15px] font-bold";
+const CTA = "h-12 w-full rounded-xl text-[15px] font-bold"
 
 const PROBLEM: Record<string, { title: string; body: string }> = {
   not_found: {
@@ -32,16 +32,12 @@ const PROBLEM: Record<string, { title: string; body: string }> = {
     title: "Undangan sudah dibatalkan",
     body: "Pemilik tabungan mencabut link ini.",
   },
-};
+}
 
-export default async function JoinPage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
-  const { token } = await params;
-  const user = await getUser();
-  const result = await getInvitationPreview(token);
+const JoinPage = async ({ params }: { params: Promise<{ token: string }> }) => {
+  const { token } = await params
+  const user = await getUser()
+  const result = await getInvitationPreview(token)
 
   if ("error" in result) {
     return (
@@ -50,11 +46,11 @@ export default async function JoinPage({
         body={result.error}
         showHome={Boolean(user)}
       />
-    );
+    )
   }
 
-  const preview = result.preview;
-  const state: InvitationState = preview.state;
+  const preview = result.preview
+  const state: InvitationState = preview.state
 
   if (state === "already_member") {
     return (
@@ -65,18 +61,22 @@ export default async function JoinPage({
         primaryHref={preview.group_id ? `/g/${preview.group_id}` : "/"}
         primaryLabel="Buka tabungan"
       />
-    );
+    )
   }
 
-  const problem = PROBLEM[state];
+  const problem = PROBLEM[state]
   if (problem) {
     return (
-      <Problem title={problem.title} body={problem.body} showHome={Boolean(user)} />
-    );
+      <Problem
+        title={problem.title}
+        body={problem.body}
+        showHome={Boolean(user)}
+      />
+    )
   }
 
-  const goal = preview.goal_amount ? formatRupiah(preview.goal_amount) : null;
-  const deadline = formatDate(preview.goal_deadline);
+  const goal = preview.goal_amount ? formatRupiah(preview.goal_amount) : null
+  const deadline = formatDate(preview.goal_deadline)
 
   // Kartu undangan dipakai di dua jalur: user yang sudah login melihatnya
   // bersama tombol Gabung/Tolak; user baru melihatnya di atas tombol daftar.
@@ -112,7 +112,7 @@ export default async function JoinPage({
         ) : null}
       </div>
     </div>
-  );
+  )
 
   return (
     <main className="flex flex-1 flex-col justify-between px-6 pt-16 pb-10">
@@ -141,56 +141,56 @@ export default async function JoinPage({
         </div>
       )}
     </main>
-  );
+  )
 }
 
-function Problem({
+const Problem = ({
   title,
   body,
   showHome,
   primaryHref,
   primaryLabel,
 }: {
-  title: string;
-  body: string;
-  showHome?: boolean;
-  primaryHref?: string;
-  primaryLabel?: string;
-}) {
-  return (
-    <main className="flex flex-1 flex-col justify-between px-6 pt-20 pb-10">
-      <div className="flex flex-col items-center text-center">
-        <div className="bg-warn-surface text-warn mb-5 grid size-14 place-items-center rounded-2xl">
-          <TriangleAlert className="size-6" />
-        </div>
-        <h1 className="text-lg font-extrabold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground mt-2 max-w-[30ch] text-sm leading-relaxed">
-          {body}
-        </p>
+  title: string
+  body: string
+  showHome?: boolean
+  primaryHref?: string
+  primaryLabel?: string
+}) => (
+  <main className="flex flex-1 flex-col justify-between px-6 pt-20 pb-10">
+    <div className="flex flex-col items-center text-center">
+      <div className="bg-warn-surface text-warn mb-5 grid size-14 place-items-center rounded-2xl">
+        <TriangleAlert className="size-6" />
       </div>
+      <h1 className="text-lg font-extrabold tracking-tight">{title}</h1>
+      <p className="text-muted-foreground mt-2 max-w-[30ch] text-sm leading-relaxed">
+        {body}
+      </p>
+    </div>
 
-      {primaryHref ? (
-        <Link
-          href={primaryHref}
-          className={cn(CTA, buttonVariants({ size: "lg" }))}
-        >
-          {primaryLabel ?? "Lanjut"}
-        </Link>
-      ) : showHome ? (
-        <Link
-          href="/"
-          className={cn(CTA, buttonVariants({ size: "lg", variant: "outline" }))}
-        >
-          Ke tabungan saya
-        </Link>
-      ) : (
-        <Link
-          href="/login"
-          className={cn(CTA, buttonVariants({ size: "lg", variant: "outline" }))}
-        >
-          Masuk
-        </Link>
-      )}
-    </main>
-  );
-}
+    {primaryHref ? (
+      <Link
+        href={primaryHref}
+        className={cn(CTA, buttonVariants({ size: "lg" }))}
+      >
+        {primaryLabel ?? "Lanjut"}
+      </Link>
+    ) : showHome ? (
+      <Link
+        href="/"
+        className={cn(CTA, buttonVariants({ size: "lg", variant: "outline" }))}
+      >
+        Ke tabungan saya
+      </Link>
+    ) : (
+      <Link
+        href="/login"
+        className={cn(CTA, buttonVariants({ size: "lg", variant: "outline" }))}
+      >
+        Masuk
+      </Link>
+    )}
+  </main>
+)
+
+export default JoinPage

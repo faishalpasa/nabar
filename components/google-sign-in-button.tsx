@@ -1,33 +1,33 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Loader2 } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
-import { GoogleGlyph } from "@/components/brand";
-import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { GoogleGlyph } from "@/components/brand"
+import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/client"
 
 type Props = {
   /** Path tujuan setelah login selesai, mis. "/join/abc123". */
-  next?: string;
-  label?: string;
-};
+  next?: string
+  label?: string
+}
 
-export function GoogleSignInButton({
+export const GoogleSignInButton = ({
   next,
   label = "Masuk dengan Google",
-}: Props) {
-  const [loading, setLoading] = useState(false);
+}: Props) => {
+  const [loading, setLoading] = useState(false)
 
   async function signIn() {
-    setLoading(true);
-    const supabase = createClient();
+    setLoading(true)
+    const supabase = createClient()
 
     // redirectTo harus menunjuk ke route handler kita, bukan langsung ke
     // halaman tujuan — handler itulah yang menukar `code` menjadi sesi.
-    const callback = new URL("/auth/callback", window.location.origin);
-    if (next) callback.searchParams.set("next", next);
+    const callback = new URL("/auth/callback", window.location.origin)
+    if (next) callback.searchParams.set("next", next)
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -35,11 +35,11 @@ export function GoogleSignInButton({
         redirectTo: callback.toString(),
         queryParams: { prompt: "select_account" },
       },
-    });
+    })
 
     if (error) {
-      setLoading(false);
-      toast.error("Gagal membuka Google", { description: error.message });
+      setLoading(false)
+      toast.error("Gagal membuka Google", { description: error.message })
     }
     // Kalau sukses, browser sudah berpindah ke Google — jangan reset loading.
   }
@@ -60,5 +60,5 @@ export function GoogleSignInButton({
       )}
       {loading ? "Menghubungkan…" : label}
     </Button>
-  );
+  )
 }

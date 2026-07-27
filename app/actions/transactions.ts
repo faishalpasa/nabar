@@ -1,13 +1,13 @@
-"use server";
+"use server"
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache"
 
-import { createClient } from "@/lib/supabase/server";
-import type { Database, TxType } from "@/lib/types";
+import { createClient } from "@/lib/supabase/server"
+import type { Database, TxType } from "@/lib/types"
 
-type TransactionUpdate = Database["public"]["Tables"]["transactions"]["Update"];
+type TransactionUpdate = Database["public"]["Tables"]["transactions"]["Update"]
 
-export type ActionResult = { error?: string };
+export type ActionResult = { error?: string }
 
 /**
  * PENTING soal RLS: kalau tidak ada policy yang cocok, Postgres tidak melempar
@@ -21,19 +21,19 @@ async function mutateTransaction(
   patch: TransactionUpdate,
   deniedMessage: string,
 ): Promise<ActionResult> {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from("transactions")
     .update(patch)
     .eq("id", txId)
-    .select("id");
+    .select("id")
 
-  if (error) return { error: error.message };
-  if (!data || data.length === 0) return { error: deniedMessage };
+  if (error) return { error: error.message }
+  if (!data || data.length === 0) return { error: deniedMessage }
 
-  revalidatePath(`/g/${groupId}`);
-  return {};
+  revalidatePath(`/g/${groupId}`)
+  return {}
 }
 
 export async function approveTransaction(txId: string, groupId: string) {
@@ -42,7 +42,7 @@ export async function approveTransaction(txId: string, groupId: string) {
     groupId,
     { status: "verified", reject_reason: null },
     "Kamu tidak punya izin menyetujui transaksi ini.",
-  );
+  )
 }
 
 export async function rejectTransaction(
@@ -50,15 +50,15 @@ export async function rejectTransaction(
   groupId: string,
   reason: string,
 ) {
-  const trimmed = reason.trim();
-  if (!trimmed) return { error: "Alasan penolakan wajib diisi." };
+  const trimmed = reason.trim()
+  if (!trimmed) return { error: "Alasan penolakan wajib diisi." }
 
   return mutateTransaction(
     txId,
     groupId,
     { status: "rejected", reject_reason: trimmed },
     "Kamu tidak punya izin menolak transaksi ini.",
-  );
+  )
 }
 
 /** Membatalkan approval yang keliru: verified -> rejected. */
@@ -67,15 +67,15 @@ export async function unapproveTransaction(
   groupId: string,
   reason: string,
 ) {
-  const trimmed = reason.trim();
-  if (!trimmed) return { error: "Alasan pembatalan wajib diisi." };
+  const trimmed = reason.trim()
+  if (!trimmed) return { error: "Alasan pembatalan wajib diisi." }
 
   return mutateTransaction(
     txId,
     groupId,
     { status: "rejected", reject_reason: trimmed },
     "Kamu tidak punya izin membatalkan transaksi ini.",
-  );
+  )
 }
 
 /**
@@ -86,24 +86,24 @@ export async function unapproveTransaction(
  * member masuk sebagai pending.
  */
 export async function recordTransaction(input: {
-  groupId: string;
-  type: TxType;
-  amount: number;
-  proofPath: string;
-  note: string;
+  groupId: string
+  type: TxType
+  amount: number
+  proofPath: string
+  note: string
 }): Promise<ActionResult> {
-  const { groupId, type, amount, proofPath } = input;
-  const note = input.note.trim();
+  const { groupId, type, amount, proofPath } = input
+  const note = input.note.trim()
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    return { error: "Nominal harus lebih dari nol." };
+    return { error: "Nominal harus lebih dari nol." }
   }
-  if (!proofPath) return { error: "Bukti belum terunggah." };
+  if (!proofPath) return { error: "Bukti belum terunggah." }
   if (type === "withdrawal" && !note) {
-    return { error: "Keterangan wajib diisi untuk penarikan dana." };
+    return { error: "Keterangan wajib diisi untuk penarikan dana." }
   }
 
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   const { error } = await supabase.from("transactions").insert({
     group_id: groupId,
@@ -111,22 +111,22 @@ export async function recordTransaction(input: {
     amount,
     proof_path: proofPath,
     note: note || null,
-  });
+  })
 
-  if (error) return { error: error.message };
+  if (error) return { error: error.message }
 
-  revalidatePath(`/g/${groupId}`);
-  revalidatePath("/");
-  return {};
+  revalidatePath(`/g/${groupId}`)
+  revalidatePath("/")
+  return {}
 }
 
 /** URL bertanda-tangan untuk menampilkan foto bukti dari bucket privat. */
 export async function getProofUrl(proofPath: string) {
-  const supabase = await createClient();
+  const supabase = await createClient()
   const { data, error } = await supabase.storage
     .from("proofs")
-    .createSignedUrl(proofPath, 60 * 5);
+    .createSignedUrl(proofPath, 60 * 5)
 
-  if (error || !data) return { error: "Bukti tidak bisa dibuka." };
-  return { url: data.signedUrl };
+  if (error || !data) return { error: "Bukti tidak bisa dibuka." }
+  return { url: data.signedUrl }
 }

@@ -1,27 +1,27 @@
-import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next"
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google"
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner"
 
-import "./globals.css";
+import "./globals.css"
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
-});
+})
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
-});
+})
 
 export const metadata: Metadata = {
   title: "Nabung Bareng",
   description:
     "Catat tabungan dan kas bareng teman, lengkap dengan bukti transfer.",
-};
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -30,22 +30,22 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#1a1d21" },
   ],
-};
+}
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="id"
-      className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="bg-background min-h-full">
-        <div className="app-frame">{children}</div>
-        <Toaster position="top-center" />
-      </body>
-    </html>
-  );
-}
+  children: React.ReactNode
+}>) => (
+  <html
+    lang="id"
+    className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
+  >
+    <body className="bg-background min-h-full">
+      <div className="app-frame">{children}</div>
+      <Toaster position="top-center" />
+    </body>
+  </html>
+)
+
+export default RootLayout
