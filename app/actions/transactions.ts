@@ -1,13 +1,31 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { after } from "next/server"
 
+import { flushNotifications } from "@/lib/notifications"
+import { baseUrl } from "@/lib/request-url"
 import { createClient } from "@/lib/supabase/server"
 import type { Database, TxType } from "@/lib/types"
 
 type TransactionUpdate = Database["public"]["Tables"]["transactions"]["Update"]
 
 export type ActionResult = { error?: string }
+
+/**
+ * Menguras antrean notifikasi setelah response dikirim.
+ *
+ * `after()` dari Next menjalankan ini di luar jalur response, jadi user tidak
+ * menunggu Resend dan uploadnya tidak ikut gagal kalau pengiriman email
+ * bermasalah. Kegagalan tidak menghilangkan notifikasi: barisnya tetap bertanda
+ * belum terkirim di transaction_events dan dicoba lagi pada aksi berikutnya.
+ */
+const notifyAfterResponse = async () => {
+  const url = await baseUrl()
+  after(async () => {
+    await flushNotifications(url)
+  })
+}
 
 /**
  * PENTING soal RLS: kalau tidak ada policy yang cocok, Postgres tidak melempar
@@ -33,6 +51,7 @@ async function mutateTransaction(
   if (!data || data.length === 0) return { error: deniedMessage }
 
   revalidatePath(`/g/${groupId}`)
+  await notifyAfterResponse()
   return {}
 }
 
@@ -117,6 +136,7 @@ export async function recordTransaction(input: {
 
   revalidatePath(`/g/${groupId}`)
   revalidatePath("/")
+  await notifyAfterResponse()
   return {}
 }
 

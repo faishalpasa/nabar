@@ -92,6 +92,7 @@ export type TransactionEventRow = {
   amount_after: string | null
   reason: string | null
   created_at: string
+  notified_at: string | null
 }
 
 export type InvitationRow = {
@@ -132,6 +133,19 @@ export type MemberContribution = {
   avatar_url: string | null
   total_contributed: string
   pending_count: number
+}
+
+/** Baris yang dikembalikan RPC notification_targets. */
+export type NotificationTargetRow = {
+  recipient_email: string
+  recipient_name: string
+  kind: "needs_approval" | "approved" | "rejected" | "withdrawal"
+  group_id: string
+  group_name: string
+  actor_name: string
+  amount: string
+  note: string | null
+  reason: string | null
 }
 
 export type TransactionFeedRow = {
@@ -202,7 +216,8 @@ export type Database = {
       transaction_events: {
         Row: TransactionEventRow
         Insert: Partial<TransactionEventRow>
-        Update: Partial<TransactionEventRow>
+        // Satu-satunya kolom yang ditulis kode: penanda notifikasi terkirim.
+        Update: { notified_at?: string | null }
         Relationships: []
       }
       invitations: {
@@ -225,6 +240,11 @@ export type Database = {
       accept_invitation: {
         Args: { p_token: string }
         Returns: string
+      }
+      // Hanya bisa dipanggil dengan service_role — lihat lib/supabase/admin.ts.
+      notification_targets: {
+        Args: { p_event_id: number }
+        Returns: NotificationTargetRow[]
       }
     }
     Enums: Record<never, never>
