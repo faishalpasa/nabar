@@ -37,11 +37,52 @@ export async function createClient() {
   })
 }
 
-/** User yang sedang login, atau null. */
-export async function getUser() {
+export type SessionUser = {
+  id: string
+  email: string | null
+  displayName: string
+  avatarUrl: string | null
+}
+
+/**
+ * User yang sedang login, atau null.
+ *
+ * Memakai getClaims(), bukan getUser(). Keduanya sama-sama tepercaya, tapi
+ * getUser() selalu memanggil server Auth Supabase, sementara getClaims()
+ * memverifikasi tanda tangan JWT secara lokal memakai kunci publik ES256 dari
+ * JWKS (yang di-cache setelah pengambilan pertama).
+ *
+ * Bedanya terasa karena fungsi Vercel berjalan jauh dari Supabase: satu
+ * panggilan jaringan lintas benua hilang di setiap halaman. Yang tidak boleh
+ * dipakai di sini adalah getSession() — itu membaca cookie tanpa memverifikasi
+ * tanda tangannya, jadi isinya tidak boleh dipercaya di server.
+ */
+export async function getUser(): Promise<SessionUser | null> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
+  const { data } = await supabase.auth.getClaims()
+
+  const claims = data?.claims
+  if (!claims?.sub) return null
+
+  const metadata = (claims.user_metadata ?? {}) as Record<string, unknown>
+  const email = typeof claims.email === "string" ? claims.email : null
+
+  const nameFromMetadata =
+    typeof metadata.full_name === "string"
+      ? metadata.full_name
+      : typeof metadata.name === "string"
+        ? metadata.name
+        : null
+
+  return {
+    id: claims.sub,
+    email,
+    displayName: nameFromMetadata ?? email?.split("@")[0] ?? "Kamu",
+    avatarUrl:
+      typeof metadata.avatar_url === "string"
+        ? metadata.avatar_url
+        : typeof metadata.picture === "string"
+          ? metadata.picture
+          : null,
+  }
 }
