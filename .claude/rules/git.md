@@ -10,6 +10,9 @@ alone — the point is that the command is never typed, not that it gets denied.
 
 - **Never commit or push automatically after making code changes.**
 - Only commit when the user explicitly asks (e.g. "commit", "commit changes").
+  **Finishing a task is not, by itself, a request to commit** — the user wants
+  to review the diff first. Stop with the working tree changed and
+  uncommitted; summarize what changed and wait.
 - Only push when the user explicitly asks (e.g. "push", "git push"). Pushing to
   `main` triggers a production deploy on Vercel — treat it as an irreversible,
   outward-facing action, not a routine follow-up to a commit.
@@ -17,6 +20,10 @@ alone — the point is that the command is never typed, not that it gets denied.
   requested together.
 - After completing a task, stop at the code changes. Do not run `git add`,
   `git commit`, or `git push` unless asked.
+- `.claude/settings.json`'s `permissions.ask` gates both `git commit` and
+  `git push`, but don't rely on that prompt as the actual safeguard — the
+  point is that the command is never typed, not that it gets caught and
+  denied.
 
 ## Pull Request / Merge Request Title
 

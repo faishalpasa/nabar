@@ -6,18 +6,25 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Aturan kerja di repo ini
 
-## Jangan pernah push sendiri
+## Jangan pernah commit atau push sendiri
 
-Setelah membuat perubahan, berhenti di `git commit`. Push adalah keputusan
-manusia, bukan kelanjutan otomatis dari sebuah perubahan — repo ini terhubung ke
-Vercel, jadi setiap push ke `main` langsung memicu deploy produksi.
+Setelah membuat perubahan, berhenti di situ — jangan `git add`, `git commit`,
+atau `git push`. User mau mengecek diff-nya dulu sebelum ada apa pun yang
+tercatat di riwayat git. **Selesai mengerjakan sesuatu bukan berarti izin untuk
+commit** — itu dua keputusan terpisah.
 
-Selesaikan pekerjaan, commit secara lokal, lalu laporkan apa yang menunggu
-di-push dan tunggu diminta. Berlaku juga untuk `git push --force`, push ke
-branch mana pun, dan pembuatan merge request.
+Selesaikan pekerjaan dengan working tree yang berubah tapi belum di-commit,
+laporkan ringkas apa yang berubah, lalu tunggu diminta. Baru commit kalau user
+eksplisit bilang ("commit", "commit changes"), dan baru push kalau eksplisit
+diminta lagi setelah itu ("push", "git push") — dua permintaan terpisah,
+kecuali user memang minta keduanya sekaligus dalam satu kalimat. Berlaku juga
+untuk `git push --force`, push ke branch mana pun, dan pembuatan merge
+request. Repo ini terhubung ke Vercel, jadi push ke `main` langsung memicu
+deploy produksi.
 
-`.claude/settings.json` juga menegakkannya lewat `permissions.ask`, tapi jangan
-bergantung pada prompt itu — jangan sampai perintahnya diketik sama sekali.
+`.claude/settings.json` juga menegakkannya lewat `permissions.ask` untuk
+`git commit` dan `git push`, tapi jangan bergantung pada prompt itu — jangan
+sampai perintahnya diketik sama sekali.
 
 ## Jangan cantumkan Claude sebagai co-author atau contributor
 
