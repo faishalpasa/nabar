@@ -229,6 +229,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Safari (terutama iOS) merender input[type=date] dengan gaya widget native,
+   yang mengabaikan border palsu berbasis box-shadow yang dipakai komponen
+   Input — hasilnya field tanggal tampil tanpa border sama sekali walau
+   input lain di halaman yang sama normal. appearance: none menonaktifkan
+   gaya native itu supaya field tanggal ikut styling Tailwind seperti input
+   lainnya. */
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 /* Aplikasi ini mobile-only: seluruh isi dibatasi selebar telepon dan
    dipusatkan, jadi di desktop tampil sebagai kolom sempit, bukan melebar. */
 .app-frame {

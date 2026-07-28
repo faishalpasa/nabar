@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next"
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google"
 
+import { PullToRefresh } from "@/components/pull-to-refresh"
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
+import { RegisterServiceWorker } from "@/components/register-service-worker"
 import { Toaster } from "@/components/ui/sonner"
 
 import "./globals.css"
@@ -43,9 +45,12 @@ const RootLayout = ({
     className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
   >
     <body className="bg-background min-h-full">
-      <div className="app-frame">{children}</div>
+      <div className="app-frame">
+        <PullToRefresh>{children}</PullToRefresh>
+      </div>
       <Toaster position="top-center" />
       <PWAInstallPrompt />
+      <RegisterServiceWorker />
     </body>
   </html>
 )
