@@ -20,7 +20,7 @@ const LoginPage = async ({
         </div>
 
         <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">
-          Nabung Bareng
+          Nabar
         </h1>
         <p className="text-ink-muted mt-3 max-w-[26ch] text-[15px] leading-relaxed">
           Catat tabungan dan kas bareng teman, lengkap dengan bukti transfernya.

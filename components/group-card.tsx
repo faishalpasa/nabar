@@ -10,13 +10,16 @@ import { cn } from "@/lib/utils"
 export const GroupCard = ({
   group,
   members,
+  currentUserId,
 }: {
   group: GroupOverview
   members: StackedMember[]
+  currentUserId: string
 }) => {
   const hasGoal = group.goal_amount !== null
   const reached = hasGoal && Number(group.balance) >= Number(group.goal_amount)
   const left = timeLeft(group.goal_deadline)
+  const isOwner = group.owner_id === currentUserId
 
   return (
     <Link
@@ -37,15 +40,28 @@ export const GroupCard = ({
             {group.name}
           </h3>
 
-          {group.pending_count > 0 ? (
-            <span className="bg-warn-surface text-warn shrink-0 rounded-full px-2 py-[3px] text-[10px] font-extrabold tracking-[0.03em]">
-              {group.pending_count} MENUNGGU
+          <div className="flex shrink-0 items-center gap-1.5">
+            {group.pending_count > 0 ? (
+              <span className="bg-warn-surface text-warn shrink-0 rounded-full px-2 py-[3px] text-[10px] font-extrabold tracking-[0.03em]">
+                {group.pending_count} MENUNGGU
+              </span>
+            ) : !hasGoal ? (
+              <span className="bg-neutral-surface text-muted-foreground shrink-0 rounded-full px-2 py-[3px] text-[10px] font-extrabold tracking-[0.03em]">
+                KAS
+              </span>
+            ) : null}
+
+            <span
+              className={cn(
+                "shrink-0 rounded-full px-2 py-[3px] text-[10px] font-extrabold tracking-[0.03em]",
+                isOwner
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-neutral-surface text-muted-foreground",
+              )}
+            >
+              {isOwner ? "OWNER" : "MEMBER"}
             </span>
-          ) : !hasGoal ? (
-            <span className="bg-neutral-surface text-muted-foreground shrink-0 rounded-full px-2 py-[3px] text-[10px] font-extrabold tracking-[0.03em]">
-              KAS
-            </span>
-          ) : null}
+          </div>
         </div>
 
         <p className="tnum mt-[5px] text-[21px] font-extrabold tracking-[-0.03em]">

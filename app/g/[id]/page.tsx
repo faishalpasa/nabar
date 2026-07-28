@@ -115,7 +115,7 @@ const GroupPage = async ({
           Riwayat
         </TabPill>
         <TabPill href={`/g/${id}?tab=member`} active={activeTab === "member"}>
-          Member {members?.length ?? 0}
+          Member
         </TabPill>
       </nav>
 

@@ -8,7 +8,7 @@ export const BrandMark = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 40 40"
     role="img"
-    aria-label="Nabung Bareng"
+    aria-label="Nabar"
     className={cn("size-12", className)}
   >
     <circle

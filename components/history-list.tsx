@@ -344,7 +344,7 @@ const TransactionRow = ({
       return {
         Icon: X,
         tone: "bg-bad-surface text-bad",
-        title: `${who} ditolak`,
+        title: isMine ? "Setoranmu ditolak" : `Setoran ${who} ditolak`,
         detail: tx.reject_reason,
         amountClass: "text-muted-foreground line-through",
       }

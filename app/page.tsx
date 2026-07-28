@@ -52,7 +52,7 @@ const HomePage = async () => {
           <div className="text-ink-accent flex flex-1 items-center gap-[7px]">
             <BrandMark className="size-5" />
             <span className="text-ink-foreground text-[13px] font-bold tracking-[-0.02em]">
-              Nabung Bareng
+              Nabar
             </span>
           </div>
 
@@ -115,6 +115,7 @@ const HomePage = async () => {
                   <GroupCard
                     group={g}
                     members={byGroup.get(g.group_id) ?? []}
+                    currentUserId={user?.id ?? ""}
                   />
                 </li>
               ))}
