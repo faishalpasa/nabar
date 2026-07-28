@@ -189,7 +189,13 @@ export type Database = {
           goal_amount?: number | null
           goal_deadline?: string | null
         }
-        Update: { name?: string }
+        // type dan owner_id tidak bisa diubah setelah dibuat — trigger
+        // groups_guard_update yang menolaknya, sengaja tidak ada di sini.
+        Update: {
+          name?: string
+          goal_amount?: number | null
+          goal_deadline?: string | null
+        }
         Relationships: []
       }
       memberships: {
