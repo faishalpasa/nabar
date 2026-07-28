@@ -20,11 +20,8 @@ const HomePage = async () => {
     .select("*")
     .order("created_at", { ascending: false })
 
-  const displayName =
-    (user?.user_metadata?.full_name as string | undefined) ??
-    user?.email?.split("@")[0] ??
-    "Kamu"
-  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined
+  const displayName = user?.displayName ?? "Kamu"
+  const avatarUrl = user?.avatarUrl ?? undefined
 
   return (
     <main className="flex flex-1 flex-col">
