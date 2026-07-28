@@ -6,14 +6,14 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 import { createClient } from "@/lib/supabase/client"
 
 export const AccountMenu = ({ children }: { children: React.ReactNode }) => {
@@ -29,41 +29,45 @@ export const AccountMenu = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
+    <Drawer open={open} showSwipeHandle onOpenChange={setOpen}>
+      <DrawerTrigger
         aria-label="Akun saya"
         className="focus-visible:ring-ring rounded-full focus-visible:ring-2 focus-visible:outline-none"
       >
         {children}
-      </DialogTrigger>
+      </DrawerTrigger>
 
-      <DialogContent className="max-w-[20rem] rounded-2xl">
-        <DialogHeader>
-          <DialogTitle>Keluar dari akun?</DialogTitle>
-          <DialogDescription>
-            Kamu perlu masuk lagi dengan Google untuk melihat tabunganmu.
-          </DialogDescription>
-        </DialogHeader>
+      <DrawerContent>
+        <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
+          <DrawerHeader className="p-0 text-left">
+            <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+              Keluar dari akun?
+            </DrawerTitle>
+            <DrawerDescription className="mt-0.5 text-xs">
+              Kamu perlu masuk lagi dengan Google untuk melihat tabunganmu.
+            </DrawerDescription>
+          </DrawerHeader>
 
-        <DialogFooter className="flex-row gap-2">
-          <Button
-            variant="outline"
-            className="flex-1 rounded-xl"
-            onClick={() => setOpen(false)}
-          >
-            Batal
-          </Button>
-          <Button
-            variant="destructive"
-            className="flex-1 gap-2 rounded-xl"
-            onClick={signOut}
-            disabled={busy}
-          >
-            <LogOut className="size-4" />
-            {busy ? "Keluar…" : "Keluar"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DrawerFooter className="flex-row gap-2.5 p-0">
+            <Button
+              variant="outline"
+              className="bg-background h-[46px] flex-1 rounded-full font-bold"
+              onClick={() => setOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              className="h-[46px] flex-1 gap-2 rounded-full font-bold"
+              onClick={signOut}
+              disabled={busy}
+            >
+              <LogOut className="size-4" />
+              {busy ? "Keluar…" : "Keluar"}
+            </Button>
+          </DrawerFooter>
+        </div>
+      </DrawerContent>
+    </Drawer>
   )
 }

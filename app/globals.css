@@ -240,6 +240,12 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  /* Beberapa browser mobile (Safari & Chrome di HP) merender kontrol native
+     input[type=date] dengan lebar sendiri yang mengabaikan CSS width pada
+     elemennya — bisa membuat seluruh halaman bisa di-scroll horizontal.
+     overflow-x di sini memotongnya di batas app-frame, bukan cuma di
+     elemennya sendiri. */
+  overflow-x: hidden;
 }
 
 @media (min-width: 26rem) {

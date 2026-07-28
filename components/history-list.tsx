@@ -24,13 +24,13 @@ import { tintFor } from "@/components/avatar-stack"
 import { EditTransactionDialog } from "@/components/edit-transaction-dialog"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import { Textarea } from "@/components/ui/textarea"
 import {
   formatDateTime,
@@ -230,78 +230,81 @@ export const HistoryList = ({
         </section>
       ))}
 
-      <Dialog
+      <Drawer
         open={reasonTarget !== null}
+        showSwipeHandle
         onOpenChange={(open) => !open && setReasonTarget(null)}
       >
-        <DialogContent className="max-w-[21.25rem] rounded-[26px] p-[22px]">
-          <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
-            <span className="bg-bad-surface text-bad grid size-[38px] shrink-0 place-items-center rounded-[14px]">
-              <X className="size-[18px]" strokeWidth={2.4} />
-            </span>
-            <div>
-              <DialogTitle className="text-base font-extrabold tracking-[-0.02em]">
-                {reasonTarget?.mode === "reject"
-                  ? "Tolak setoran ini?"
-                  : "Batalkan persetujuan?"}
-              </DialogTitle>
-              <DialogDescription className="mt-0.5 text-xs">
-                {reasonTarget?.mode === "reject"
-                  ? `${reasonTarget?.tx.display_name.split(" ")[0]} bisa unggah ulang sebagai transaksi baru.`
-                  : "Transaksi kembali berstatus ditolak dan tidak lagi dihitung ke saldo."}
-              </DialogDescription>
+        <DrawerContent>
+          <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
+            <DrawerHeader className="flex-row items-center gap-3 p-0 text-left">
+              <span className="bg-bad-surface text-bad grid size-[38px] shrink-0 place-items-center rounded-[14px]">
+                <X className="size-[18px]" strokeWidth={2.4} />
+              </span>
+              <div>
+                <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+                  {reasonTarget?.mode === "reject"
+                    ? "Tolak setoran ini?"
+                    : "Batalkan persetujuan?"}
+                </DrawerTitle>
+                <DrawerDescription className="mt-0.5 text-xs">
+                  {reasonTarget?.mode === "reject"
+                    ? `${reasonTarget?.tx.display_name.split(" ")[0]} bisa unggah ulang sebagai transaksi baru.`
+                    : "Transaksi kembali berstatus ditolak dan tidak lagi dihitung ke saldo."}
+                </DrawerDescription>
+              </div>
+            </DrawerHeader>
+
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              autoFocus
+              aria-label="Alasan"
+              placeholder="Contoh: foto bukti buram, nominal tidak sesuai"
+              className="bg-background min-h-[76px] resize-none rounded-[18px] px-[15px] py-[13px] text-[13px]"
+            />
+
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK_REASONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => setReason(q)}
+                  className="bg-background text-foreground/80 hover:bg-muted focus-visible:ring-ring rounded-full px-[11px] py-1.5 text-[11px] font-semibold shadow-[0_0_0_1px_var(--border)] focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  {q}
+                </button>
+              ))}
             </div>
-          </DialogHeader>
 
-          <Textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            rows={3}
-            autoFocus
-            aria-label="Alasan"
-            placeholder="Contoh: foto bukti buram, nominal tidak sesuai"
-            className="bg-background min-h-[76px] resize-none rounded-[18px] px-[15px] py-[13px] text-[13px]"
-          />
+            <p className="text-muted-foreground text-[11px]">
+              Alasan wajib diisi dan terlihat oleh semua member.
+            </p>
 
-          <div className="flex flex-wrap gap-1.5">
-            {QUICK_REASONS.map((q) => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => setReason(q)}
-                className="bg-background text-foreground/80 hover:bg-muted focus-visible:ring-ring rounded-full px-[11px] py-1.5 text-[11px] font-semibold shadow-[0_0_0_1px_var(--border)] focus-visible:ring-2 focus-visible:outline-none"
+            <DrawerFooter className="flex-row gap-2.5 p-0">
+              <Button
+                variant="outline"
+                className="bg-background h-[46px] flex-1 rounded-full font-bold"
+                onClick={() => setReasonTarget(null)}
               >
-                {q}
-              </button>
-            ))}
+                Batal
+              </Button>
+              <Button
+                disabled={pending || reason.trim().length === 0}
+                onClick={submitReason}
+                className="bg-bad h-[46px] flex-1 rounded-full font-bold text-white hover:bg-[oklch(0.50_0.155_25)]"
+              >
+                {pending
+                  ? "Menyimpan…"
+                  : reasonTarget?.mode === "reject"
+                    ? "Tolak setoran"
+                    : "Batalkan"}
+              </Button>
+            </DrawerFooter>
           </div>
-
-          <p className="text-muted-foreground text-[11px]">
-            Alasan wajib diisi dan terlihat oleh semua member.
-          </p>
-
-          <DialogFooter className="flex-row gap-2.5">
-            <Button
-              variant="outline"
-              className="bg-background h-[46px] flex-1 rounded-full font-bold"
-              onClick={() => setReasonTarget(null)}
-            >
-              Batal
-            </Button>
-            <Button
-              disabled={pending || reason.trim().length === 0}
-              onClick={submitReason}
-              className="bg-bad h-[46px] flex-1 rounded-full font-bold text-white hover:bg-[oklch(0.50_0.155_25)]"
-            >
-              {pending
-                ? "Menyimpan…"
-                : reasonTarget?.mode === "reject"
-                  ? "Tolak setoran"
-                  : "Batalkan"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
       {editTarget ? (
         <EditTransactionDialog

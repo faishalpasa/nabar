@@ -7,13 +7,13 @@ import { toast } from "sonner"
 import { createInvite } from "@/app/actions/invitations"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 
 export const InviteButton = ({ groupId }: { groupId: string }) => {
   const [url, setUrl] = useState<string | null>(null)
@@ -57,57 +57,60 @@ export const InviteButton = ({ groupId }: { groupId: string }) => {
         {pending ? "Membuat link…" : "Undang member"}
       </Button>
 
-      <Dialog
+      <Drawer
         open={url !== null}
+        showSwipeHandle
         onOpenChange={(open) => !open && setUrl(null)}
       >
-        <DialogContent className="max-w-[21.25rem] rounded-[26px] p-[22px]">
-          <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
-            <span className="bg-accent text-accent-foreground grid size-[38px] shrink-0 place-items-center rounded-[14px]">
-              <UserPlus className="size-[18px]" strokeWidth={2.2} />
-            </span>
-            <div>
-              <DialogTitle className="text-base font-extrabold tracking-[-0.02em]">
-                Link undangan siap
-              </DialogTitle>
-              <DialogDescription className="mt-0.5 text-xs">
-                Sekali pakai · berlaku 14 hari
-              </DialogDescription>
+        <DrawerContent>
+          <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
+            <DrawerHeader className="flex-row items-center gap-3 p-0 text-left">
+              <span className="bg-accent text-accent-foreground grid size-[38px] shrink-0 place-items-center rounded-[14px]">
+                <UserPlus className="size-[18px]" strokeWidth={2.2} />
+              </span>
+              <div>
+                <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+                  Link undangan siap
+                </DrawerTitle>
+                <DrawerDescription className="mt-0.5 text-xs">
+                  Sekali pakai · berlaku 14 hari
+                </DrawerDescription>
+              </div>
+            </DrawerHeader>
+
+            <div className="bg-background rounded-[18px] px-[15px] py-[13px]">
+              <p className="text-foreground/80 font-mono text-[11px] leading-[1.7] break-all">
+                {url}
+              </p>
             </div>
-          </DialogHeader>
 
-          <div className="bg-background rounded-[18px] px-[15px] py-[13px]">
-            <p className="text-foreground/80 font-mono text-[11px] leading-[1.7] break-all">
-              {url}
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Kirim ke satu orang saja. Untuk orang berikutnya, buat link baru.
             </p>
+
+            <DrawerFooter className="flex-row gap-2.5 p-0">
+              <Button
+                variant="outline"
+                className="bg-background h-[46px] flex-1 rounded-full font-bold"
+                onClick={() => setUrl(null)}
+              >
+                Tutup
+              </Button>
+              <Button
+                onClick={copy}
+                className="bg-ink hover:bg-ink/90 h-[46px] flex-1 gap-2 rounded-full font-bold text-white"
+              >
+                {copied ? (
+                  <Check className="size-4" strokeWidth={2.2} />
+                ) : (
+                  <Copy className="size-4" strokeWidth={2.2} />
+                )}
+                {copied ? "Tersalin" : "Salin link"}
+              </Button>
+            </DrawerFooter>
           </div>
-
-          <p className="text-muted-foreground text-[11px] leading-relaxed">
-            Kirim ke satu orang saja. Untuk orang berikutnya, buat link baru.
-          </p>
-
-          <DialogFooter className="flex-row gap-2.5">
-            <Button
-              variant="outline"
-              className="bg-background h-[46px] flex-1 rounded-full font-bold"
-              onClick={() => setUrl(null)}
-            >
-              Tutup
-            </Button>
-            <Button
-              onClick={copy}
-              className="bg-ink hover:bg-ink/90 h-[46px] flex-1 gap-2 rounded-full font-bold text-white"
-            >
-              {copied ? (
-                <Check className="size-4" strokeWidth={2.2} />
-              ) : (
-                <Copy className="size-4" strokeWidth={2.2} />
-              )}
-              {copied ? "Tersalin" : "Salin link"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
     </>
   )
 }

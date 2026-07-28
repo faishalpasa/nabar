@@ -143,7 +143,7 @@ const GroupPage = async ({
               href={`/g/${id}/catat?type=deposit`}
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "ink-cta bg-ink hover:bg-ink/90 h-[52px] flex-2 gap-2 rounded-full text-[15px] font-bold text-white",
+                "ink-cta bg-ink hover:bg-ink/90 h-[52px] flex-1 gap-2 rounded-full text-[15px] font-bold text-white",
               )}
             >
               <ArrowDownToLine className="size-[17px]" strokeWidth={2.4} />
