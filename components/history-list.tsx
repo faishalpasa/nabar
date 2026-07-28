@@ -21,7 +21,7 @@ import {
   unapproveTransaction,
 } from "@/app/actions/transactions"
 import { tintFor } from "@/components/avatar-stack"
-import { EditProofDialog } from "@/components/edit-proof-dialog"
+import { EditTransactionDialog } from "@/components/edit-transaction-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -222,7 +222,7 @@ export const HistoryList = ({
                     setReason("")
                     setReasonTarget({ tx, mode: "unapprove" })
                   }}
-                  onEditProof={() => setEditTarget(tx)}
+                  onEditTransaction={() => setEditTarget(tx)}
                 />
               </li>
             ))}
@@ -304,12 +304,13 @@ export const HistoryList = ({
       </Dialog>
 
       {editTarget ? (
-        <EditProofDialog
+        <EditTransactionDialog
           open={editTarget !== null}
           onOpenChange={(open) => !open && setEditTarget(null)}
           txId={editTarget.id}
           groupId={groupId}
           userId={currentUserId}
+          currentAmount={Number(editTarget.amount)}
           currentProofPath={editTarget.proof_path}
           onSaved={() => router.refresh()}
         />
@@ -325,7 +326,7 @@ const TransactionRow = ({
   disabled,
   onViewProof,
   onUnapprove,
-  onEditProof,
+  onEditTransaction,
 }: {
   tx: TransactionFeedRow
   isMine: boolean
@@ -333,7 +334,7 @@ const TransactionRow = ({
   disabled: boolean
   onViewProof: () => void
   onUnapprove: () => void
-  onEditProof: () => void
+  onEditTransaction: () => void
 }) => {
   const who = isMine ? "Kamu" : tx.display_name
   const isWithdrawal = tx.type === "withdrawal"
@@ -415,8 +416,8 @@ const TransactionRow = ({
         {isOwner && isMine && tx.status !== "rejected" ? (
           <button
             type="button"
-            onClick={onEditProof}
-            aria-label="Ganti bukti transfer"
+            onClick={onEditTransaction}
+            aria-label="Edit transaksi"
             className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-lg p-1.5 focus-visible:ring-2 focus-visible:outline-none"
           >
             <Pencil className="size-[15px]" strokeWidth={2.2} />

@@ -4,7 +4,8 @@ import { Pencil } from "lucide-react"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 
-import { editTransactionProof, getProofUrl } from "@/app/actions/transactions"
+import { editTransaction, getProofUrl } from "@/app/actions/transactions"
+import { AmountInput } from "@/components/amount-input"
 import { PhotoPicker } from "@/components/photo-picker"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,33 +16,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { removeProof, uploadProof } from "@/lib/upload-proof"
 
-type EditProofDialogProps = {
+type EditTransactionDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   txId: string
   groupId: string
   userId: string
+  currentAmount: number
   currentProofPath: string
   onSaved: () => void
 }
 
 /**
- * Ganti foto bukti transaksi milik sendiri (owner-only, lihat trigger
- * transactions_guard_update). Perubahan tercatat sebagai baris "proof_edited"
- * di transaction_events, bukan menimpa riwayat transaksi yang dilihat member —
- * ini log audit, bukan bagian dari tab History.
+ * Edit nominal transaksi milik sendiri (owner-only, lihat trigger
+ * transactions_guard_update). Ganti foto bukti bersifat OPSIONAL — kalau
+ * tidak pilih foto baru, bukti lama tetap dipakai. Perubahan tercatat sebagai
+ * baris "amount_edited" / "proof_edited" di transaction_events, bukan
+ * menimpa riwayat transaksi yang dilihat member — ini log audit, bukan
+ * bagian dari tab History.
  */
-export const EditProofDialog = ({
+export const EditTransactionDialog = ({
   open,
   onOpenChange,
   txId,
   groupId,
   userId,
+  currentAmount,
   currentProofPath,
   onSaved,
-}: EditProofDialogProps) => {
+}: EditTransactionDialogProps) => {
+  const [amount, setAmount] = useState(currentAmount)
   const [file, setFile] = useState<File | null>(null)
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
   const [loadingCurrent, setLoadingCurrent] = useState(false)
@@ -52,6 +59,7 @@ export const EditProofDialog = ({
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
+      setAmount(currentAmount)
       setFile(null)
       setCurrentUrl(null)
       setLoadingCurrent(true)
@@ -64,27 +72,35 @@ export const EditProofDialog = ({
   }
 
   const save = async () => {
-    if (!file) return
+    if (!amount || amount <= 0) return
 
-    setSaving(true)
-    const uploaded = await uploadProof(groupId, userId, file)
-    setSaving(false)
+    let proofPath: string | undefined
 
-    if ("error" in uploaded) {
-      toast.error("Gagal mengunggah bukti", { description: uploaded.error })
-      return
+    if (file) {
+      setSaving(true)
+      const uploaded = await uploadProof(groupId, userId, file)
+      setSaving(false)
+
+      if ("error" in uploaded) {
+        toast.error("Gagal mengunggah bukti", { description: uploaded.error })
+        return
+      }
+      proofPath = uploaded.path
     }
 
     startTransition(async () => {
-      const { error } = await editTransactionProof(txId, groupId, uploaded.path)
+      const { error } = await editTransaction(txId, groupId, {
+        amount,
+        proofPath,
+      })
 
       if (error) {
-        await removeProof(uploaded.path)
-        toast.error("Gagal menyimpan bukti", { description: error })
+        if (proofPath) await removeProof(proofPath)
+        toast.error("Gagal menyimpan perubahan", { description: error })
         return
       }
 
-      toast.success("Bukti transfer diperbarui")
+      toast.success("Transaksi diperbarui")
       onOpenChange(false)
       onSaved()
     })
@@ -99,26 +115,42 @@ export const EditProofDialog = ({
           </span>
           <div>
             <DialogTitle className="text-base font-extrabold tracking-[-0.02em]">
-              Ganti bukti transfer
+              Edit transaksi
             </DialogTitle>
             <DialogDescription className="mt-0.5 text-xs">
-              Foto lama tidak hilang — perubahan ini tercatat di log, terpisah
-              dari riwayat transaksi.
+              Perubahan tercatat di log, terpisah dari riwayat transaksi.
             </DialogDescription>
           </div>
         </DialogHeader>
 
-        {loadingCurrent ? (
-          <div className="bg-background flex h-[190px] items-center justify-center rounded-[20px] text-xs text-muted-foreground">
-            Memuat bukti saat ini…
-          </div>
-        ) : (
-          <PhotoPicker
-            file={file}
-            onFileChange={setFile}
-            initialPreviewUrl={currentUrl}
-          />
-        )}
+        <AmountInput
+          id="edit-amount"
+          name="amount"
+          label="Nominal"
+          value={amount}
+          onValueChange={setAmount}
+        />
+
+        <div className="flex flex-col gap-2.5">
+          <Label className="flex items-center gap-2 text-[13px] font-bold">
+            Bukti transfer
+            <span className="bg-neutral-surface text-muted-foreground rounded-lg px-[7px] py-[3px] text-[10px] font-bold tracking-[0.03em] uppercase">
+              opsional
+            </span>
+          </Label>
+
+          {loadingCurrent ? (
+            <div className="bg-background flex h-[190px] items-center justify-center rounded-[20px] text-xs text-muted-foreground">
+              Memuat bukti saat ini…
+            </div>
+          ) : (
+            <PhotoPicker
+              file={file}
+              onFileChange={setFile}
+              initialPreviewUrl={currentUrl}
+            />
+          )}
+        </div>
 
         <DialogFooter className="flex-row gap-2.5">
           <Button
@@ -129,7 +161,7 @@ export const EditProofDialog = ({
             Batal
           </Button>
           <Button
-            disabled={!file || busy}
+            disabled={!amount || amount <= 0 || busy}
             onClick={save}
             className="bg-ink hover:bg-ink/90 h-[46px] flex-1 rounded-full font-bold text-white"
           >

@@ -98,27 +98,34 @@ export async function unapproveTransaction(
 }
 
 /**
- * Owner mengganti foto bukti transaksi yang dia buat sendiri.
+ * Owner mengedit nominal transaksi yang dia buat sendiri; ganti foto bukti
+ * bersifat opsional (kirim `proofPath` kalau ada file baru, kosongkan kalau
+ * bukti lama tetap dipakai).
  *
- * File baru sudah diunggah ke Storage oleh client sebelum action ini dipanggil
- * (path proofnya dikirim di sini) — trigger transactions_guard_update yang
- * memvalidasi bahwa path itu benar-benar milik owner+grup ini, transaksinya
- * miliknya sendiri, dan belum rejected. Perubahan tercatat sebagai baris
- * "proof_edited" di transaction_events, terpisah dari riwayat transaksi yang
- * dilihat member — bukan menimpa jejaknya.
+ * File baru (kalau ada) sudah diunggah ke Storage oleh client sebelum action
+ * ini dipanggil — trigger transactions_guard_update yang memvalidasi bahwa
+ * path itu benar-benar milik owner+grup ini, transaksinya miliknya sendiri,
+ * dan belum rejected. Perubahan tercatat sebagai baris "amount_edited" dan/
+ * atau "proof_edited" di transaction_events, terpisah dari riwayat transaksi
+ * yang dilihat member — bukan menimpa jejaknya.
  */
-export async function editTransactionProof(
+export async function editTransaction(
   txId: string,
   groupId: string,
-  proofPath: string,
+  input: { amount: number; proofPath?: string },
 ) {
-  if (!proofPath) return { error: "Bukti baru belum terunggah." }
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    return { error: "Nominal harus lebih dari nol." }
+  }
+
+  const patch: TransactionUpdate = { amount: input.amount }
+  if (input.proofPath) patch.proof_path = input.proofPath
 
   return mutateTransaction(
     txId,
     groupId,
-    { proof_path: proofPath },
-    "Kamu tidak punya izin mengedit bukti transaksi ini.",
+    patch,
+    "Kamu tidak punya izin mengedit transaksi ini.",
   )
 }
 
