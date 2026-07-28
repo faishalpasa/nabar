@@ -1,6 +1,14 @@
 "use client"
 
-import { Check, Eye, Pencil, Receipt, X } from "lucide-react"
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Check,
+  Clock,
+  Eye,
+  Receipt,
+  X,
+} from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
@@ -11,8 +19,7 @@ import {
   rejectTransaction,
   unapproveTransaction,
 } from "@/app/actions/transactions"
-import { StatusBadge } from "@/components/status-badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { tintFor } from "@/components/avatar-stack"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,10 +29,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { formatDateTime, formatSigned, initials } from "@/lib/format"
+import {
+  formatDateTime,
+  formatRupiah,
+  initials,
+  monthLabel,
+} from "@/lib/format"
 import type { TransactionFeedRow } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 type Props = {
   rows: TransactionFeedRow[]
@@ -34,10 +46,10 @@ type Props = {
   currentUserId: string
 }
 
-type ReasonTarget = {
-  tx: TransactionFeedRow
-  mode: "reject" | "unapprove"
-}
+type ReasonTarget = { tx: TransactionFeedRow; mode: "reject" | "unapprove" }
+
+/** Alasan yang paling sering dipakai, biar owner tidak perlu mengetik. */
+const QUICK_REASONS = ["Bukti buram", "Nominal beda", "Dobel"]
 
 export const HistoryList = ({
   rows,
@@ -50,7 +62,20 @@ export const HistoryList = ({
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
-  function approve(tx: TransactionFeedRow) {
+  // Yang menunggu persetujuan diangkat ke atas sebagai kartu aksi — itu
+  // satu-satunya baris yang menuntut owner melakukan sesuatu.
+  const awaiting = isOwner ? rows.filter((r) => r.status === "pending") : []
+  const settled = rows.filter((r) => !awaiting.includes(r))
+
+  const months: { label: string; items: TransactionFeedRow[] }[] = []
+  for (const tx of settled) {
+    const label = monthLabel(tx.created_at)
+    const last = months.at(-1)
+    if (last?.label === label) last.items.push(tx)
+    else months.push({ label, items: [tx] })
+  }
+
+  const approve = (tx: TransactionFeedRow) => {
     startTransition(async () => {
       const { error } = await approveTransaction(tx.id, groupId)
       if (error) {
@@ -62,7 +87,7 @@ export const HistoryList = ({
     })
   }
 
-  function submitReason() {
+  const submitReason = () => {
     if (!reasonTarget) return
     const { tx, mode } = reasonTarget
 
@@ -90,21 +115,25 @@ export const HistoryList = ({
     })
   }
 
-  async function viewProof(tx: TransactionFeedRow) {
+  const viewProof = async (tx: TransactionFeedRow) => {
     const result = await getProofUrl(tx.proof_path)
-    if ("error" in result) return toast.error(result.error)
+    if ("error" in result) {
+      toast.error(result.error)
+      return
+    }
     window.open(result.url, "_blank", "noopener,noreferrer")
   }
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center px-6 py-14 text-center">
-        <div className="bg-muted text-muted-foreground mb-3 grid size-12 place-items-center rounded-2xl">
+      <div className="ink-card rounded-[26px] px-6 py-10 text-center">
+        <div className="bg-muted text-muted-foreground mx-auto mb-3 grid size-12 place-items-center rounded-2xl">
           <Receipt className="size-5" />
         </div>
         <p className="text-sm font-bold">Belum ada transaksi</p>
-        <p className="text-muted-foreground mt-1 max-w-[26ch] text-xs leading-relaxed">
-          Setor pertama kali, lalu unggah bukti transfernya di sini.
+        <p className="text-muted-foreground mx-auto mt-1.5 max-w-[28ch] text-xs leading-relaxed">
+          Transfer dulu secara manual, lalu catat setoran pertamamu di sini
+          beserta bukti transfernya.
         </p>
       </div>
     )
@@ -112,201 +141,271 @@ export const HistoryList = ({
 
   return (
     <>
-      <ul className="divide-y">
-        {rows.map((tx) => {
-          const isMine = tx.user_id === currentUserId
-          const isWithdrawal = tx.type === "withdrawal"
-          const canApprove = isOwner && tx.status === "pending"
-          const canUnapprove =
-            isOwner && tx.status === "verified" && !isWithdrawal && !isMine
-          const canEdit = isOwner && isMine && tx.status !== "rejected"
+      {awaiting.map((tx) => (
+        <div
+          key={tx.id}
+          className="bg-card mb-3 rounded-[22px] p-3.5 shadow-[0_0_0_1.5px_oklch(0.83_0.10_78)]"
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              className={cn(
+                "grid size-[34px] shrink-0 place-items-center rounded-full text-[11px] font-bold",
+                tintFor(tx.user_id),
+              )}
+            >
+              {initials(tx.display_name)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold">{tx.display_name}</p>
+              <p className="text-muted-foreground truncate text-[11px]">
+                {formatDateTime(tx.created_at)}
+                {tx.note ? ` · ${tx.note}` : ""}
+              </p>
+            </div>
+            <span className="tnum text-base font-extrabold">
+              {formatRupiah(tx.amount)}
+            </span>
+          </div>
 
-          return (
-            <li key={tx.id} className="flex gap-3 py-3.5">
-              <Avatar className="mt-0.5 size-9 shrink-0">
-                {tx.avatar_url ? (
-                  <AvatarImage src={tx.avatar_url} alt="" />
-                ) : null}
-                <AvatarFallback className="text-[11px] font-semibold">
-                  {initials(tx.display_name)}
-                </AvatarFallback>
-              </Avatar>
+          <div className="mt-3 flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => viewProof(tx)}
+              className="bg-muted text-foreground/80 hover:bg-muted/70 h-[38px] flex-1 gap-1.5 rounded-xl text-[13px] font-semibold"
+            >
+              <Eye className="size-[15px]" strokeWidth={2.2} />
+              Lihat bukti
+            </Button>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold">
-                      {tx.display_name}
-                      {isMine ? (
-                        <span className="text-muted-foreground font-medium">
-                          {" "}
-                          · Kamu
-                        </span>
-                      ) : null}
-                    </p>
-                    <p className="text-muted-foreground text-[11px]">
-                      {formatDateTime(tx.created_at)}
-                      {tx.was_edited ? " · nominal diedit" : ""}
-                    </p>
-                  </div>
+            <Button
+              aria-label={`Tolak setoran ${tx.display_name}`}
+              disabled={pending}
+              onClick={() => {
+                setReason("")
+                setReasonTarget({ tx, mode: "reject" })
+              }}
+              className="bg-bad-surface text-bad hover:bg-bad-surface/70 size-[38px] rounded-xl p-0"
+            >
+              <X className="size-4" strokeWidth={2.4} />
+            </Button>
 
-                  <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span
-                      className="tnum text-sm font-bold"
-                      style={
-                        isWithdrawal
-                          ? { color: "var(--muted-foreground)" }
-                          : undefined
-                      }
-                    >
-                      {formatSigned(tx.signed_amount)}
-                    </span>
-                    <StatusBadge status={tx.status} type={tx.type} />
-                  </div>
-                </div>
+            <Button
+              disabled={pending}
+              onClick={() => approve(tx)}
+              className="bg-ok hover:bg-ok/90 h-[38px] flex-1 gap-1.5 rounded-xl text-[13px] font-bold text-white"
+            >
+              <Check className="size-[15px]" strokeWidth={2.6} />
+              Setujui
+            </Button>
+          </div>
+        </div>
+      ))}
 
-                {tx.note ? (
-                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                    {tx.note}
-                  </p>
-                ) : null}
-
-                {tx.reject_reason ? (
-                  <p className="bg-bad-surface text-bad mt-1.5 rounded-lg px-2.5 py-1.5 text-xs leading-relaxed">
-                    Alasan: {tx.reject_reason}
-                  </p>
-                ) : null}
-
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => viewProof(tx)}
-                    className="text-muted-foreground h-7 gap-1.5 rounded-lg px-2 text-xs"
-                  >
-                    <Eye className="size-3.5" />
-                    Bukti
-                  </Button>
-
-                  {canEdit ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled
-                      title="Belum tersedia"
-                      className="text-muted-foreground h-7 gap-1.5 rounded-lg px-2 text-xs"
-                    >
-                      <Pencil className="size-3.5" />
-                      Edit
-                    </Button>
-                  ) : null}
-
-                  {canApprove ? (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => approve(tx)}
-                        disabled={pending}
-                        className="h-7 gap-1.5 rounded-lg px-2.5 text-xs font-bold"
-                      >
-                        <Check className="size-3.5" />
-                        Setujui
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={pending}
-                        onClick={() => {
-                          setReason("")
-                          setReasonTarget({ tx, mode: "reject" })
-                        }}
-                        className="h-7 gap-1.5 rounded-lg px-2.5 text-xs font-bold"
-                      >
-                        <X className="size-3.5" />
-                        Tolak
-                      </Button>
-                    </>
-                  ) : null}
-
-                  {canUnapprove ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={pending}
-                      onClick={() => {
-                        setReason("")
-                        setReasonTarget({ tx, mode: "unapprove" })
-                      }}
-                      className="text-bad h-7 gap-1.5 rounded-lg px-2 text-xs"
-                    >
-                      <X className="size-3.5" />
-                      Batalkan
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            </li>
-          )
-        })}
-      </ul>
+      {months.map((month) => (
+        <section key={month.label}>
+          <h3 className="text-muted-foreground mt-5 mb-2 text-[11px] font-bold tracking-[0.1em] uppercase">
+            {month.label}
+          </h3>
+          <ul className="ink-card overflow-hidden rounded-[22px]">
+            {month.items.map((tx, i) => (
+              <li key={tx.id} className={cn(i > 0 && "border-t")}>
+                <TransactionRow
+                  tx={tx}
+                  isMine={tx.user_id === currentUserId}
+                  isOwner={isOwner}
+                  disabled={pending}
+                  onViewProof={() => viewProof(tx)}
+                  onUnapprove={() => {
+                    setReason("")
+                    setReasonTarget({ tx, mode: "unapprove" })
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
 
       <Dialog
         open={reasonTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setReasonTarget(null)
-        }}
+        onOpenChange={(open) => !open && setReasonTarget(null)}
       >
-        <DialogContent className="max-w-[21rem] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {reasonTarget?.mode === "reject"
-                ? "Tolak setoran ini?"
-                : "Batalkan persetujuan?"}
-            </DialogTitle>
-            <DialogDescription>
-              {reasonTarget?.mode === "reject"
-                ? `${reasonTarget?.tx.display_name} bisa mengunggah ulang sebagai transaksi baru.`
-                : "Transaksi akan kembali berstatus ditolak dan tidak lagi dihitung ke saldo."}
-            </DialogDescription>
+        <DialogContent className="max-w-[21.25rem] rounded-[26px] p-[22px]">
+          <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
+            <span className="bg-bad-surface text-bad grid size-[38px] shrink-0 place-items-center rounded-[14px]">
+              <X className="size-[18px]" strokeWidth={2.4} />
+            </span>
+            <div>
+              <DialogTitle className="text-base font-extrabold tracking-[-0.02em]">
+                {reasonTarget?.mode === "reject"
+                  ? "Tolak setoran ini?"
+                  : "Batalkan persetujuan?"}
+              </DialogTitle>
+              <DialogDescription className="mt-0.5 text-xs">
+                {reasonTarget?.mode === "reject"
+                  ? `${reasonTarget?.tx.display_name.split(" ")[0]} bisa unggah ulang sebagai transaksi baru.`
+                  : "Transaksi kembali berstatus ditolak dan tidak lagi dihitung ke saldo."}
+              </DialogDescription>
+            </div>
           </DialogHeader>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="reason" className="text-[13px] font-semibold">
-              Alasan
-            </Label>
-            <Textarea
-              id="reason"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              rows={3}
-              autoFocus
-              placeholder="Contoh: foto bukti buram, nominal tidak sesuai"
-              className="resize-none rounded-xl text-sm"
-            />
-            <p className="text-muted-foreground text-xs">
-              Alasan wajib diisi dan akan terlihat oleh semua member.
-            </p>
+          <Textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            autoFocus
+            aria-label="Alasan"
+            placeholder="Contoh: foto bukti buram, nominal tidak sesuai"
+            className="bg-background min-h-[76px] resize-none rounded-[18px] px-[15px] py-[13px] text-[13px]"
+          />
+
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_REASONS.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => setReason(q)}
+                className="bg-background text-foreground/80 hover:bg-muted focus-visible:ring-ring rounded-full px-[11px] py-1.5 text-[11px] font-semibold shadow-[0_0_0_1px_var(--border)] focus-visible:ring-2 focus-visible:outline-none"
+              >
+                {q}
+              </button>
+            ))}
           </div>
 
-          <DialogFooter className="flex-row gap-2">
+          <p className="text-muted-foreground text-[11px]">
+            Alasan wajib diisi dan terlihat oleh semua member.
+          </p>
+
+          <DialogFooter className="flex-row gap-2.5">
             <Button
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="bg-background h-[46px] flex-1 rounded-full font-bold"
               onClick={() => setReasonTarget(null)}
             >
               Batal
             </Button>
             <Button
-              variant="destructive"
-              className="flex-1 rounded-xl font-bold"
               disabled={pending || reason.trim().length === 0}
               onClick={submitReason}
+              className="bg-bad h-[46px] flex-1 rounded-full font-bold text-white hover:bg-[oklch(0.50_0.155_25)]"
             >
-              {pending ? "Menyimpan…" : "Kirim"}
+              {pending
+                ? "Menyimpan…"
+                : reasonTarget?.mode === "reject"
+                  ? "Tolak setoran"
+                  : "Batalkan"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+const TransactionRow = ({
+  tx,
+  isMine,
+  isOwner,
+  disabled,
+  onViewProof,
+  onUnapprove,
+}: {
+  tx: TransactionFeedRow
+  isMine: boolean
+  isOwner: boolean
+  disabled: boolean
+  onViewProof: () => void
+  onUnapprove: () => void
+}) => {
+  const who = isMine ? "Kamu" : tx.display_name
+  const isWithdrawal = tx.type === "withdrawal"
+
+  const { Icon, tone, title, detail, amountClass } = (() => {
+    if (tx.status === "rejected") {
+      return {
+        Icon: X,
+        tone: "bg-bad-surface text-bad",
+        title: `${who} ditolak`,
+        detail: tx.reject_reason,
+        amountClass: "text-muted-foreground line-through",
+      }
+    }
+    if (tx.status === "pending") {
+      return {
+        Icon: Clock,
+        tone: "bg-warn-surface text-warn",
+        title: `${who} setor`,
+        detail: "menunggu persetujuan owner",
+        amountClass: "text-muted-foreground",
+      }
+    }
+    if (isWithdrawal) {
+      return {
+        Icon: ArrowUpFromLine,
+        tone: "bg-neutral-surface text-foreground/80",
+        title: `${who} tarik dana`,
+        detail: tx.note,
+        amountClass: "text-muted-foreground",
+      }
+    }
+    return {
+      Icon: ArrowDownToLine,
+      tone: "bg-ok-surface text-ok",
+      title: `${who} setor`,
+      detail: tx.note ?? "terverifikasi",
+      amountClass: "text-[oklch(0.42_0.09_160)]",
+    }
+  })()
+
+  const sign = tx.status === "verified" ? (isWithdrawal ? "−" : "+") : ""
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-3.5">
+      <span
+        className={cn(
+          "grid size-[34px] shrink-0 place-items-center rounded-full",
+          tone,
+        )}
+      >
+        <Icon className="size-4" strokeWidth={2.2} />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold">{title}</p>
+        <p className="text-muted-foreground truncate text-[11px]">
+          {formatDateTime(tx.created_at)}
+          {detail ? ` · ${detail}` : ""}
+          {tx.was_edited ? " · nominal diedit" : ""}
+        </p>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1">
+        <span className={cn("tnum text-sm font-bold", amountClass)}>
+          {sign}
+          {formatRupiah(tx.amount)}
+        </span>
+
+        <button
+          type="button"
+          onClick={onViewProof}
+          aria-label="Lihat bukti"
+          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-lg p-1.5 focus-visible:ring-2 focus-visible:outline-none"
+        >
+          <Eye className="size-[15px]" strokeWidth={2.2} />
+        </button>
+
+        {isOwner && tx.status === "verified" && !isWithdrawal && !isMine ? (
+          <button
+            type="button"
+            onClick={onUnapprove}
+            disabled={disabled}
+            aria-label="Batalkan persetujuan"
+            className="text-muted-foreground hover:text-bad focus-visible:ring-ring rounded-lg p-1.5 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+          >
+            <X className="size-[15px]" strokeWidth={2.2} />
+          </button>
+        ) : null}
+      </div>
+    </div>
   )
 }

@@ -20,7 +20,7 @@ export const InviteButton = ({ groupId }: { groupId: string }) => {
   const [copied, setCopied] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  function generate() {
+  const generate = () => {
     startTransition(async () => {
       const result = await createInvite(groupId)
       if ("error" in result) {
@@ -32,7 +32,7 @@ export const InviteButton = ({ groupId }: { groupId: string }) => {
     })
   }
 
-  async function copy() {
+  const copy = async () => {
     if (!url) return
     try {
       await navigator.clipboard.writeText(url)
@@ -51,9 +51,9 @@ export const InviteButton = ({ groupId }: { groupId: string }) => {
         size="lg"
         onClick={generate}
         disabled={pending}
-        className="h-12 w-full gap-2 rounded-xl font-bold"
+        className="ink-cta bg-ink hover:bg-ink/90 h-[52px] w-full gap-2 rounded-full text-[15px] font-bold text-white"
       >
-        <UserPlus className="size-4" />
+        <UserPlus className="size-[17px]" strokeWidth={2.4} />
         {pending ? "Membuat link…" : "Undang member"}
       </Button>
 
@@ -61,37 +61,47 @@ export const InviteButton = ({ groupId }: { groupId: string }) => {
         open={url !== null}
         onOpenChange={(open) => !open && setUrl(null)}
       >
-        <DialogContent className="max-w-[21rem] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Link undangan siap</DialogTitle>
-            <DialogDescription>
-              Kirim link ini ke satu orang. Link hanya bisa dipakai sekali dan
-              kedaluwarsa dalam 14 hari — buat link baru untuk orang berikutnya.
-            </DialogDescription>
+        <DialogContent className="max-w-[21.25rem] rounded-[26px] p-[22px]">
+          <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
+            <span className="bg-accent text-accent-foreground grid size-[38px] shrink-0 place-items-center rounded-[14px]">
+              <UserPlus className="size-[18px]" strokeWidth={2.2} />
+            </span>
+            <div>
+              <DialogTitle className="text-base font-extrabold tracking-[-0.02em]">
+                Link undangan siap
+              </DialogTitle>
+              <DialogDescription className="mt-0.5 text-xs">
+                Sekali pakai · berlaku 14 hari
+              </DialogDescription>
+            </div>
           </DialogHeader>
 
-          <div className="bg-muted rounded-xl px-3 py-2.5">
-            <p className="text-foreground/80 font-mono text-[11px] leading-relaxed break-all">
+          <div className="bg-background rounded-[18px] px-[15px] py-[13px]">
+            <p className="text-foreground/80 font-mono text-[11px] leading-[1.7] break-all">
               {url}
             </p>
           </div>
 
-          <DialogFooter className="flex-row gap-2">
+          <p className="text-muted-foreground text-[11px] leading-relaxed">
+            Kirim ke satu orang saja. Untuk orang berikutnya, buat link baru.
+          </p>
+
+          <DialogFooter className="flex-row gap-2.5">
             <Button
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="bg-background h-[46px] flex-1 rounded-full font-bold"
               onClick={() => setUrl(null)}
             >
               Tutup
             </Button>
             <Button
-              className="flex-1 gap-2 rounded-xl font-bold"
               onClick={copy}
+              className="bg-ink hover:bg-ink/90 h-[46px] flex-1 gap-2 rounded-full font-bold text-white"
             >
               {copied ? (
-                <Check className="size-4" />
+                <Check className="size-4" strokeWidth={2.2} />
               ) : (
-                <Copy className="size-4" />
+                <Copy className="size-4" strokeWidth={2.2} />
               )}
               {copied ? "Tersalin" : "Salin link"}
             </Button>

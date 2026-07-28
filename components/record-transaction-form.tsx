@@ -17,10 +17,10 @@ import type { TxType } from "@/lib/types"
 
 const MAX_BYTES = 5 * 1024 * 1024
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/heic"]
+const DEPOSIT_PRESETS = [100_000, 250_000, 500_000, 1_000_000]
 
 type Props = {
   groupId: string
-  groupName: string
   userId: string
   type: TxType
   isOwner: boolean
@@ -29,7 +29,6 @@ type Props = {
 
 export const RecordTransactionForm = ({
   groupId,
-  groupName,
   userId,
   type,
   isOwner,
@@ -51,32 +50,34 @@ export const RecordTransactionForm = ({
   const canSubmit =
     amount > 0 && file !== null && (!noteRequired || note.trim().length > 0)
 
-  function pickFile(selected: File | null) {
+  const pickFile = (selected: File | null) => {
     if (!selected) return
 
     if (!ACCEPTED.includes(selected.type)) {
-      return toast.error("Format file tidak didukung", {
+      toast.error("Format file tidak didukung", {
         description: "Gunakan JPG, PNG, WEBP, atau HEIC.",
       })
+      return
     }
     if (selected.size > MAX_BYTES) {
-      return toast.error("Ukuran file terlalu besar", {
+      toast.error("Ukuran file terlalu besar", {
         description: "Maksimal 5 MB per foto.",
       })
+      return
     }
 
     setFile(selected)
     setPreviewUrl(URL.createObjectURL(selected))
   }
 
-  function clearFile() {
+  const clearFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setFile(null)
     setPreviewUrl(null)
     if (inputRef.current) inputRef.current.value = ""
   }
 
-  async function submit() {
+  const submit = async () => {
     if (!file) return
 
     setUploading(true)
@@ -95,9 +96,10 @@ export const RecordTransactionForm = ({
     setUploading(false)
 
     if (uploadError) {
-      return toast.error("Gagal mengunggah bukti", {
+      toast.error("Gagal mengunggah bukti", {
         description: uploadError.message,
       })
+      return
     }
 
     startTransition(async () => {
@@ -128,45 +130,37 @@ export const RecordTransactionForm = ({
     })
   }
 
+  const after = Number(balance) - amount
+
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col gap-6 px-4 py-5">
-        <p className="text-muted-foreground text-[13px] leading-relaxed">
-          {isWithdrawal ? (
-            <>
-              Tarik dana dari{" "}
-              <span className="text-foreground font-semibold">{groupName}</span>
-              . Saldo sekarang{" "}
-              <span className="text-foreground tnum font-semibold">
-                {formatRupiah(balance)}
-              </span>
-              .
-            </>
-          ) : (
-            <>
-              Transfer dulu secara manual, lalu catat di sini beserta bukti
-              transfernya ke{" "}
-              <span className="text-foreground font-semibold">{groupName}</span>
-              .
-            </>
-          )}
-        </p>
-
-        <AmountInput
-          id="amount"
-          name="amount"
-          label={isWithdrawal ? "Nominal ditarik" : "Nominal setoran"}
-          required
-          autoFocus
-          placeholder="500.000"
-          value={amount}
-          onValueChange={setAmount}
-        />
-
+      <div className="flex flex-1 flex-col gap-5.5 px-4 pt-5.5 pb-2">
         <div className="flex flex-col gap-2">
-          <Label className="text-[13px] font-semibold">
-            Foto bukti{" "}
-            <span className="text-bad bg-bad-surface ml-1 rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
+          <AmountInput
+            id="amount"
+            name="amount"
+            label={isWithdrawal ? "Nominal ditarik" : "Nominal setoran"}
+            required
+            autoFocus
+            emphasis
+            placeholder="500.000"
+            value={amount}
+            onValueChange={setAmount}
+            presets={isWithdrawal ? undefined : DEPOSIT_PRESETS}
+          />
+
+          {isWithdrawal && amount > 0 ? (
+            <p className="tnum text-muted-foreground text-[11px]">
+              Sisa saldo setelah ditarik: {formatRupiah(after)}
+              {after < 0 ? " — saldo jadi minus" : ""}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-2.5">
+          <Label className="flex items-center gap-2 text-[13px] font-bold">
+            {isWithdrawal ? "Foto bukti" : "Foto bukti transfer"}
+            <span className="bg-bad-surface text-bad rounded-lg px-[7px] py-[3px] text-[10px] font-bold tracking-[0.03em] uppercase">
               wajib
             </span>
           </Label>
@@ -182,57 +176,55 @@ export const RecordTransactionForm = ({
           />
 
           {previewUrl ? (
-            <div className="relative overflow-hidden rounded-xl border">
+            <div className="bg-card relative overflow-hidden rounded-[20px] shadow-[0_0_0_1px_var(--border)]">
               <Image
                 src={previewUrl}
                 alt="Pratinjau bukti transfer"
                 width={400}
                 height={400}
                 unoptimized
-                className="max-h-64 w-full object-contain"
+                className="max-h-[190px] w-full object-contain"
               />
               <button
                 type="button"
                 onClick={clearFile}
                 aria-label="Hapus foto"
-                className="bg-background/85 focus-visible:ring-ring absolute top-2 right-2 grid size-8 place-items-center rounded-full backdrop-blur focus-visible:ring-2 focus-visible:outline-none"
+                className="focus-visible:ring-ring absolute top-2.5 right-2.5 grid size-8 place-items-center rounded-full bg-[oklch(0.22_0.015_240_/_0.7)] text-white focus-visible:ring-2 focus-visible:outline-none"
               >
-                <X className="size-4" />
+                <X className="size-[15px]" strokeWidth={2.4} />
               </button>
             </div>
           ) : (
             <label
               htmlFor="proof"
-              className="border-input hover:bg-muted/50 focus-within:ring-ring flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors focus-within:ring-2"
+              className="bg-card focus-within:ring-ring hover:bg-muted/40 flex h-[150px] cursor-pointer flex-col items-center justify-center gap-2.5 rounded-[20px] shadow-[0_0_0_1.5px_var(--input)] transition-colors focus-within:ring-2"
             >
-              <span className="bg-muted text-muted-foreground grid size-10 place-items-center rounded-xl">
-                <ImagePlus className="size-5" />
+              <span className="bg-accent text-accent-foreground grid size-11 place-items-center rounded-2xl">
+                <ImagePlus className="size-[21px]" />
               </span>
-              <span className="text-sm font-semibold">
-                Ambil atau pilih foto
-              </span>
-              <span className="text-muted-foreground text-xs">
-                JPG, PNG, WEBP, atau HEIC · maks 5 MB
+              <span className="text-sm font-bold">Ambil atau pilih foto</span>
+              <span className="text-muted-foreground text-[11px]">
+                JPG, PNG, WEBP, atau HEIC · maksimal 5 MB
               </span>
             </label>
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <Label
             htmlFor="note"
-            className="flex items-center gap-2 text-[13px] font-semibold"
+            className="flex items-center gap-2 text-[13px] font-bold"
           >
             {isWithdrawal ? "Keterangan pengeluaran" : "Catatan"}
-            {noteRequired ? (
-              <span className="text-bad bg-bad-surface rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
-                wajib
-              </span>
-            ) : (
-              <span className="text-muted-foreground bg-muted rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
-                opsional
-              </span>
-            )}
+            <span
+              className={
+                noteRequired
+                  ? "bg-bad-surface text-bad rounded-lg px-[7px] py-[3px] text-[10px] font-bold tracking-[0.03em] uppercase"
+                  : "bg-neutral-surface text-muted-foreground rounded-lg px-[7px] py-[3px] text-[10px] font-bold tracking-[0.03em] uppercase"
+              }
+            >
+              {noteRequired ? "wajib" : "opsional"}
+            </span>
           </Label>
           <Textarea
             id="note"
@@ -243,26 +235,31 @@ export const RecordTransactionForm = ({
             placeholder={
               isWithdrawal ? "DP tiket pesawat" : "Setoran bulan Juli"
             }
-            className="resize-none rounded-xl text-sm"
+            className="bg-card min-h-20 resize-none rounded-[20px] border-0 px-4 py-3.5 text-sm shadow-[0_0_0_1px_var(--border)]"
           />
+          {isWithdrawal ? (
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Keterangan ini terlihat semua member — tulis sejelas mungkin.
+            </p>
+          ) : null}
         </div>
 
         {!isOwner && !isWithdrawal ? (
-          <p className="bg-muted text-muted-foreground flex gap-2.5 rounded-xl px-3.5 py-3 text-xs leading-relaxed">
+          <p className="bg-accent text-accent-foreground flex gap-2.5 rounded-[20px] px-4 py-3.5 text-xs leading-relaxed">
             <Info className="mt-0.5 size-4 shrink-0" />
-            Setoranmu berstatus menunggu sampai owner menyetujuinya. Kalau
-            ditolak, kamu bisa mengunggah ulang sebagai transaksi baru.
+            Setoranmu berstatus menunggu sampai owner menyetujui. Kalau ditolak,
+            kamu bisa unggah ulang sebagai transaksi baru.
           </p>
         ) : null}
       </div>
 
-      <div className="bottom-bar px-4 pt-3">
+      <div className="ink-dock">
         <Button
           type="button"
           size="lg"
           onClick={submit}
           disabled={!canSubmit || busy}
-          className="h-12 w-full gap-2 rounded-xl text-[15px] font-bold"
+          className="ink-cta bg-ink hover:bg-ink/90 h-[52px] w-full gap-2 rounded-full text-[15px] font-bold text-white"
         >
           {busy ? <Loader2 className="size-4 animate-spin" /> : null}
           {uploading

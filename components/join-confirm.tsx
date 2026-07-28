@@ -17,7 +17,7 @@ export const JoinConfirm = ({
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
-  function join() {
+  const join = () => {
     startTransition(async () => {
       const result = await acceptInvite(token)
 
@@ -33,13 +33,13 @@ export const JoinConfirm = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-2">
+      <div className="flex gap-2.5">
         <Button
           variant="outline"
           size="lg"
           disabled={pending}
           onClick={() => router.replace("/")}
-          className="h-12 flex-1 rounded-xl text-[15px] font-bold"
+          className="bg-card h-[52px] flex-1 rounded-full text-[15px] font-bold"
         >
           Tolak
         </Button>
@@ -47,15 +47,15 @@ export const JoinConfirm = ({
           size="lg"
           disabled={pending}
           onClick={join}
-          className="h-12 flex-1 rounded-xl text-[15px] font-bold"
+          className="ink-cta bg-ink hover:bg-ink/90 h-[52px] flex-2 rounded-full text-[15px] font-bold text-white"
         >
           {pending ? "Bergabung…" : "Gabung"}
         </Button>
       </div>
 
       <p className="text-muted-foreground text-center text-xs leading-relaxed">
-        Setelah bergabung, kamu bisa melihat seluruh riwayat dan kontribusi
-        semua member.
+        Setelah gabung, kamu bisa lihat seluruh riwayat dan kontribusi semua
+        member.
       </p>
     </div>
   )

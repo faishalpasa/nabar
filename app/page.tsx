@@ -1,12 +1,15 @@
-import { Plus, Wallet } from "lucide-react"
+import { Clock, Plus } from "lucide-react"
 import Link from "next/link"
 
 import { AccountMenu } from "@/components/account-menu"
+import { type StackedMember } from "@/components/avatar-stack"
+import { BrandMark } from "@/components/brand"
+import { EmptyState, GroupCard } from "@/components/group-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { formatDate, formatPercent, formatRupiah, initials } from "@/lib/format"
+import { buttonVariants } from "@/components/ui/button"
+import { formatRupiah, initials } from "@/lib/format"
 import { createClient, getUser } from "@/lib/supabase/server"
-import type { GroupOverview } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 export const metadata = { title: "Tabungan saya · Nabung Bareng" }
 
@@ -14,121 +17,126 @@ const HomePage = async () => {
   const user = await getUser()
   const supabase = await createClient()
 
-  // RLS membatasi view ini ke grup yang user ikuti — tidak perlu filter manual.
-  const { data: groups, error } = await supabase
-    .from("group_overview")
-    .select("*")
-    .order("created_at", { ascending: false })
+  // Dua query berjalan bersamaan. member_contributions sengaja tanpa filter
+  // group_id: RLS sudah membatasinya ke grup yang user ikuti, jadi satu
+  // perjalanan cukup untuk mengisi tumpukan avatar di semua kartu.
+  const [{ data: groups, error }, { data: members }] = await Promise.all([
+    supabase
+      .from("group_overview")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("member_contributions")
+      .select("group_id, user_id, display_name, avatar_url, total_contributed")
+      .order("total_contributed", { ascending: false }),
+  ])
+
+  const byGroup = new Map<string, StackedMember[]>()
+  for (const m of members ?? []) {
+    const list = byGroup.get(m.group_id) ?? []
+    list.push(m)
+    byGroup.set(m.group_id, list)
+  }
 
   const displayName = user?.displayName ?? "Kamu"
   const avatarUrl = user?.avatarUrl ?? undefined
 
+  const total = (groups ?? []).reduce((sum, g) => sum + Number(g.balance), 0)
+  const pending = (groups ?? []).reduce((sum, g) => sum + g.pending_count, 0)
+  const isEmpty = !groups || groups.length === 0
+
   return (
     <main className="flex flex-1 flex-col">
-      <header className="bg-card/90 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-base font-bold">Tabungan saya</h1>
-          <p className="text-muted-foreground truncate text-xs">
-            Halo, {displayName}
-          </p>
+      <header className="ink-panel px-4 pt-4 pb-6">
+        <div className="flex items-center gap-3">
+          <div className="text-ink-accent flex flex-1 items-center gap-[7px]">
+            <BrandMark className="size-5" />
+            <span className="text-ink-foreground text-[13px] font-bold tracking-[-0.02em]">
+              Nabung Bareng
+            </span>
+          </div>
+
+          <AccountMenu>
+            <Avatar className="size-[34px] bg-white/14">
+              {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
+              <AvatarFallback className="bg-transparent text-xs font-bold text-current">
+                {initials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+          </AccountMenu>
         </div>
 
-        <AccountMenu>
-          <Avatar className="size-9">
-            {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
-            <AvatarFallback className="text-xs font-semibold">
-              {initials(displayName)}
-            </AvatarFallback>
-          </Avatar>
-        </AccountMenu>
+        <p className="text-ink-accent mt-6 text-xs font-semibold tracking-[0.06em] uppercase">
+          Total kamu simpan
+        </p>
+        <p
+          className={cn(
+            "tnum mt-1.5 text-4xl leading-[1.05] font-extrabold tracking-[-0.035em]",
+            isEmpty && "text-ink-foreground/45",
+          )}
+        >
+          {formatRupiah(total)}
+        </p>
+
+        {isEmpty ? (
+          <p className="text-ink-muted mt-3.5 text-xs">
+            Belum ada tabungan yang kamu ikuti.
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {pending > 0 ? (
+              <span className="bg-warn-surface text-warn inline-flex items-center gap-1.5 rounded-full px-3 py-[7px] text-xs font-bold">
+                <Clock className="size-[13px]" strokeWidth={2.4} />
+                {pending} perlu disetujui
+              </span>
+            ) : null}
+            <span className="inline-flex items-center rounded-full bg-white/14 px-3 py-[7px] text-xs font-semibold">
+              {groups.length} tabungan aktif
+            </span>
+          </div>
+        )}
       </header>
 
-      <div className="flex-1 px-4 py-4">
+      <div className="flex-1 px-4 pt-5 pb-2">
         {error ? (
-          <p className="bg-bad-surface text-bad rounded-xl px-4 py-3 text-sm">
+          <p className="bg-bad-surface text-bad rounded-2xl px-4 py-3 text-sm">
             Gagal memuat tabungan: {error.message}
           </p>
-        ) : !groups || groups.length === 0 ? (
+        ) : isEmpty ? (
           <EmptyState />
         ) : (
-          <ul className="flex flex-col gap-3">
-            {groups.map((g) => (
-              <li key={g.group_id}>
-                <GroupCard group={g} />
-              </li>
-            ))}
-          </ul>
+          <>
+            <h2 className="text-muted-foreground mb-3 text-[13px] font-bold tracking-[0.06em] uppercase">
+              Tabungan saya
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {groups.map((g) => (
+                <li key={g.group_id}>
+                  <GroupCard
+                    group={g}
+                    members={byGroup.get(g.group_id) ?? []}
+                  />
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </div>
 
-      <Link
-        href="/new"
-        aria-label="Buat tabungan baru"
-        className="bg-primary text-primary-foreground focus-visible:ring-ring focus-visible:ring-offset-card active:scale-95 sticky bottom-6 z-20 mr-4 ml-auto grid size-14 place-items-center rounded-full shadow-lg transition-transform focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-      >
-        <Plus className="size-6" strokeWidth={2.5} />
-      </Link>
+      <div className="ink-dock">
+        <Link
+          href="/new"
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "ink-cta bg-ink hover:bg-ink/90 h-[52px] w-full gap-2 rounded-full text-[15px] font-bold text-white",
+          )}
+        >
+          <Plus className="size-[18px]" strokeWidth={2.5} />
+          Buat tabungan baru
+        </Link>
+      </div>
     </main>
   )
 }
-
-const GroupCard = ({ group }: { group: GroupOverview }) => {
-  const hasGoal = group.goal_amount !== null
-  const percent = formatPercent(group.progress)
-  const deadline = formatDate(group.goal_deadline)
-
-  return (
-    <Link
-      href={`/g/${group.group_id}`}
-      className="bg-card focus-visible:ring-ring active:bg-muted/60 block rounded-2xl border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="min-w-0 flex-1 leading-snug font-bold">{group.name}</h2>
-
-        {group.pending_count > 0 ? (
-          <span className="bg-warn-surface text-warn shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
-            {group.pending_count} menunggu
-          </span>
-        ) : !hasGoal ? (
-          <span className="bg-neutral-surface text-muted-foreground shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
-            Kas
-          </span>
-        ) : null}
-      </div>
-
-      <p className="tnum mt-2 text-xl font-extrabold tracking-tight">
-        {formatRupiah(group.balance)}
-      </p>
-
-      {hasGoal ? (
-        <div className="mt-3 flex flex-col gap-1.5">
-          <Progress value={Number(group.progress) * 100} className="h-1.5" />
-          <div className="text-muted-foreground flex justify-between text-xs">
-            <span className="tnum">
-              {percent} dari {formatRupiah(group.goal_amount)}
-            </span>
-            {deadline ? <span>Target {deadline}</span> : null}
-          </div>
-        </div>
-      ) : (
-        <p className="text-muted-foreground mt-1.5 text-xs">
-          {group.member_count} member · tanpa target
-        </p>
-      )}
-    </Link>
-  )
-}
-
-const EmptyState = () => (
-  <div className="flex flex-col items-center px-6 py-16 text-center">
-    <div className="bg-accent text-primary mb-4 grid size-14 place-items-center rounded-2xl">
-      <Wallet className="size-6" />
-    </div>
-    <h2 className="font-bold">Belum ada tabungan</h2>
-    <p className="text-muted-foreground mt-1.5 max-w-[28ch] text-sm leading-relaxed">
-      Buat tabungan pertamamu, atau tunggu diundang lewat link dari temanmu.
-    </p>
-  </div>
-)
 
 export default HomePage

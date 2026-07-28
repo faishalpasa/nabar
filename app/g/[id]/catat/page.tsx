@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation"
 
-import { AppBar } from "@/components/app-bar"
+import { InkHeader } from "@/components/ink-header"
 import { RecordTransactionForm } from "@/components/record-transaction-form"
+import { formatRupiah } from "@/lib/format"
 import { createClient, getUser } from "@/lib/supabase/server"
 import type { TxType } from "@/lib/types"
 
@@ -33,16 +34,31 @@ const RecordPage = async ({
   // tapi jangan tampilkan form yang pasti gagal.
   if (type === "withdrawal" && !isOwner) notFound()
 
+  const isWithdrawal = type === "withdrawal"
+
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar
-        title={type === "withdrawal" ? "Tarik dana" : "Setor & unggah bukti"}
+      <InkHeader
+        title={isWithdrawal ? "Tarik dana" : `Setor ke ${group.name}`}
         backHref={`/g/${id}`}
-      />
+        lede={
+          isWithdrawal
+            ? undefined
+            : "Transfer dulu secara manual, lalu catat di sini beserta bukti transfernya."
+        }
+      >
+        {isWithdrawal ? (
+          <div className="mt-4 flex items-baseline gap-2">
+            <p className="text-ink-muted text-xs">Saldo {group.name}</p>
+            <p className="tnum text-[15px] font-bold">
+              {formatRupiah(group.balance)}
+            </p>
+          </div>
+        ) : null}
+      </InkHeader>
 
       <RecordTransactionForm
         groupId={id}
-        groupName={group.name}
         userId={user.id}
         type={type}
         isOwner={isOwner}

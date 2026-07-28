@@ -257,3 +257,67 @@
   backdrop-filter: blur(8px);
   border-top: 1px solid var(--border);
 }
+
+/* ==========================================================================
+   Arah "Ink" — dari Claude Design (Nabung Bareng.dc.html, turn 3)
+   Panel teal gelap sebagai kepala tiap layar, kartu putih membulat di
+   bawahnya, tombol utama berbentuk pil mengambang.
+   ========================================================================== */
+
+:root {
+  --ink: oklch(0.30 0.045 197);
+  --ink-foreground: oklch(0.97 0.01 190);
+  /* Teks sekunder di atas panel ink */
+  --ink-muted: oklch(0.82 0.03 190);
+  /* Label kecil & ikon aksen di atas panel ink */
+  --ink-accent: oklch(0.78 0.11 180);
+  --ink-soft: oklch(0.85 0.05 187);
+}
+
+.dark {
+  /* Belum didesain untuk gelap — panel dinaikkan sedikit supaya tetap
+     terbaca sebagai permukaan terpisah dari latar. */
+  --ink: oklch(0.26 0.04 197);
+  --ink-foreground: oklch(0.95 0.01 190);
+  --ink-muted: oklch(0.78 0.03 190);
+  --ink-accent: oklch(0.75 0.10 180);
+  --ink-soft: oklch(0.80 0.045 187);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-accent: var(--ink-accent);
+  --color-ink-soft: var(--ink-soft);
+}
+
+/* Panel kepala: menempel ke atas, sudut bawah membulat besar */
+.ink-panel {
+  background-color: var(--ink);
+  color: var(--ink-foreground);
+  border-radius: 0 0 1.75rem 1.75rem;
+}
+
+/* Tombol utama mengambang di atas konten, menghormati safe area iOS */
+.ink-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  padding: 0.75rem 1rem max(1.25rem, env(safe-area-inset-bottom));
+  background: linear-gradient(
+    to top,
+    var(--background) 62%,
+    color-mix(in oklab, var(--background) 0%, transparent)
+  );
+}
+
+.ink-cta {
+  box-shadow: 0 8px 22px rgba(20, 50, 60, 0.22);
+}
+
+/* Kartu putih standar di arah ini: garis tipis, bukan bayangan berat */
+.ink-card {
+  background-color: var(--card);
+  box-shadow: 0 1px 2px rgba(20, 40, 50, 0.05), 0 0 0 1px var(--border);
+}

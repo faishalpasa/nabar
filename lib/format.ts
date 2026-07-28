@@ -67,3 +67,40 @@ export function initials(name: string) {
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("")
 }
+
+/**
+ * Sisa waktu menuju tanggal target, dalam bahasa yang dipakai orang: "sisa 4
+ * bln", "sisa 12 hari", "lewat target". null kalau tanggalnya tidak diisi.
+ */
+export function timeLeft(deadline: string | null, now = new Date()) {
+  if (!deadline) return null
+
+  const target = new Date(`${deadline}T00:00:00`)
+  const days = Math.ceil((target.getTime() - now.getTime()) / 86_400_000)
+
+  if (days < 0) return "lewat target"
+  if (days === 0) return "hari ini"
+  if (days < 31) return `sisa ${days} hari`
+
+  return `sisa ${Math.round(days / 30)} bln`
+}
+
+/** "Rp15jt" / "Rp300rb" — dipakai di teks pendukung yang sempit. */
+export function formatShort(value: string | number) {
+  const n = Number(value)
+  if (n >= 1_000_000_000) return `Rp${+(n / 1_000_000_000).toFixed(1)}m`
+  if (n >= 1_000_000)
+    return `Rp${+(n / 1_000_000).toFixed(n % 1_000_000 ? 1 : 0)}jt`
+  if (n >= 1_000) return `Rp${Math.round(n / 1_000)}rb`
+  return formatRupiah(n)
+}
+
+/** Kunci bulan untuk mengelompokkan riwayat, mis. "Juli 2026". */
+const monthFmt = new Intl.DateTimeFormat("id-ID", {
+  month: "long",
+  year: "numeric",
+})
+
+export function monthLabel(value: string) {
+  return monthFmt.format(new Date(value))
+}

@@ -3,6 +3,8 @@ import { GoogleSignInButton } from "@/components/google-sign-in-button"
 
 export const metadata = { title: "Masuk · Nabung Bareng" }
 
+const USES = ["Kas RT", "Patungan liburan", "Kado"]
+
 const LoginPage = async ({
   searchParams,
 }: {
@@ -11,25 +13,36 @@ const LoginPage = async ({
   const { next, error } = await searchParams
 
   return (
-    <main className="flex flex-1 flex-col justify-between px-6 pt-20 pb-10">
+    <main className="bg-ink text-ink-foreground flex flex-1 flex-col justify-between px-6 pt-24 pb-10">
       <div className="flex flex-col items-center text-center">
-        <div className="bg-accent text-primary mb-6 grid size-20 place-items-center rounded-3xl">
+        <div className="text-ink-accent mb-7 grid size-20 place-items-center rounded-[28px] bg-white/12">
           <BrandMark className="size-11" />
         </div>
 
-        <h1 className="text-2xl font-extrabold tracking-tight">
+        <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">
           Nabung Bareng
         </h1>
-        <p className="text-muted-foreground mt-2 max-w-[24ch] text-[15px] leading-relaxed">
-          Catat tabungan dan kas bareng teman, lengkap dengan bukti transfer.
+        <p className="text-ink-muted mt-3 max-w-[26ch] text-[15px] leading-relaxed">
+          Catat tabungan dan kas bareng teman, lengkap dengan bukti transfernya.
         </p>
+
+        <ul className="mt-7 flex flex-wrap justify-center gap-2">
+          {USES.map((use) => (
+            <li
+              key={use}
+              className="rounded-full bg-white/10 px-3.5 py-[7px] text-xs font-semibold"
+            >
+              {use}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="flex flex-col gap-4">
         {error ? (
           <p
             role="alert"
-            className="bg-bad-surface text-bad rounded-xl px-4 py-3 text-[13px] leading-relaxed"
+            className="rounded-2xl bg-white/12 px-4 py-3 text-[13px] leading-relaxed"
           >
             {error}
           </p>
@@ -37,8 +50,8 @@ const LoginPage = async ({
 
         <GoogleSignInButton next={next} />
 
-        <p className="text-muted-foreground text-center text-xs leading-relaxed">
-          Transfer tetap kamu lakukan manual. Aplikasi ini mencatat dan
+        <p className="text-ink-muted text-center text-xs leading-relaxed">
+          Transfer tetap kamu lakukan manual. Aplikasi ini yang mencatat dan
           menyimpan buktinya.
         </p>
       </div>

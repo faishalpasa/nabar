@@ -4,7 +4,8 @@ import { useState } from "react"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { formatPlain, parseAmount } from "@/lib/format"
+import { formatPlain, formatShort, parseAmount } from "@/lib/format"
+import { cn } from "@/lib/utils"
 
 type Props = {
   id: string
@@ -14,11 +15,10 @@ type Props = {
   placeholder?: string
   required?: boolean
   autoFocus?: boolean
-  /**
-   * Nilai numerik. Kalau diisi bersama onValueChange, komponen jadi controlled;
-   * kalau tidak, ia mengelola state sendiri dan nilainya ikut terkirim lewat
-   * FormData karena atribut `name`.
-   */
+  /** Tampilan besar untuk layar yang nominalnya jadi fokus utama. */
+  emphasis?: boolean
+  /** Nominal pintasan, mis. [100000, 250000, 500000, 1000000]. */
+  presets?: number[]
   value?: number
   onValueChange?: (value: number) => void
 }
@@ -32,6 +32,8 @@ export const AmountInput = ({
   placeholder,
   required,
   autoFocus,
+  emphasis,
+  presets,
   value,
   onValueChange,
 }: Props) => {
@@ -41,43 +43,76 @@ export const AmountInput = ({
   const current = controlled ? value : internal
   const display = current === 0 ? "" : formatPlain(current)
 
-  function handleChange(raw: string) {
-    const next = parseAmount(raw)
+  const set = (next: number) => {
     if (controlled) onValueChange(next)
     else setInternal(next)
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       <Label
         htmlFor={id}
-        className="flex items-center gap-2 text-[13px] font-semibold"
+        className="flex items-center gap-2 text-[13px] font-bold"
       >
         {label}
         {optional ? (
-          <span className="text-muted-foreground bg-muted rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
+          <span className="bg-neutral-surface text-muted-foreground rounded-lg px-[7px] py-[3px] text-[10px] font-bold tracking-[0.03em] uppercase">
             opsional
           </span>
         ) : null}
       </Label>
 
       <div className="relative">
-        <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[15px] font-semibold">
+        <span
+          className={cn(
+            "text-muted-foreground pointer-events-none absolute top-1/2 -translate-y-1/2 font-bold",
+            emphasis ? "left-[18px] text-lg" : "left-4 text-[15px]",
+          )}
+        >
           Rp
         </span>
         <Input
           id={id}
           name={name}
           value={display}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) => set(parseAmount(e.target.value))}
           inputMode="numeric"
           autoComplete="off"
           required={required}
           autoFocus={autoFocus}
           placeholder={placeholder}
-          className="tnum h-12 rounded-xl pl-10 text-[15px] font-semibold"
+          className={cn(
+            "tnum bg-card border-0 font-bold shadow-[0_0_0_1px_var(--border)]",
+            emphasis
+              ? "h-16 rounded-[20px] pl-[52px] text-[26px] tracking-[-0.03em] shadow-[0_0_0_2px_var(--primary)]"
+              : "h-[52px] rounded-2xl pl-11 text-[17px] tracking-[-0.02em]",
+          )}
         />
       </div>
+
+      {presets ? (
+        <div className="flex flex-wrap gap-[7px]">
+          {presets.map((amount) => {
+            const active = current === amount
+            return (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => set(amount)}
+                aria-pressed={active}
+                className={cn(
+                  "focus-visible:ring-ring rounded-full px-[11px] py-1.5 text-[11px] font-bold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                  active
+                    ? "bg-accent text-accent-foreground shadow-[0_0_0_1px_var(--primary)]"
+                    : "bg-card text-foreground/80 shadow-[0_0_0_1px_var(--border)]",
+                )}
+              >
+                {formatShort(amount).replace("Rp", "")}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
     </div>
   )
 }

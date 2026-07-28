@@ -1,4 +1,4 @@
-import { CalendarRange, Target, TriangleAlert } from "lucide-react"
+import { TriangleAlert } from "lucide-react"
 import Link from "next/link"
 
 import { getInvitationPreview } from "@/app/actions/invitations"
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 
 export const metadata = { title: "Undangan · Nabung Bareng" }
 
-const CTA = "h-12 w-full rounded-xl text-[15px] font-bold"
+const CTA = "h-[52px] w-full rounded-full text-[15px] font-bold"
 
 const PROBLEM: Record<string, { title: string; body: string }> = {
   not_found: {
@@ -78,71 +78,82 @@ const JoinPage = async ({ params }: { params: Promise<{ token: string }> }) => {
   const goal = preview.goal_amount ? formatRupiah(preview.goal_amount) : null
   const deadline = formatDate(preview.goal_deadline)
 
-  // Kartu undangan dipakai di dua jalur: user yang sudah login melihatnya
-  // bersama tombol Gabung/Tolak; user baru melihatnya di atas tombol daftar.
-  const card = (
-    <div className="bg-card w-full rounded-2xl border p-5 text-center">
-      <p className="text-muted-foreground text-[13px]">
-        <span className="text-foreground font-semibold">
-          {preview.invited_by_name ?? "Seseorang"}
-        </span>{" "}
-        mengundang kamu ke
-      </p>
-      <h1 className="mt-1.5 text-xl leading-snug font-extrabold tracking-tight">
-        {preview.group_name}
-      </h1>
-
-      <div className="text-muted-foreground mt-4 flex flex-col gap-1.5 text-xs">
-        {goal ? (
-          <p className="flex items-center justify-center gap-1.5">
-            <Target className="size-3.5" />
-            <span className="tnum">Target {goal}</span>
-          </p>
-        ) : (
-          <p className="flex items-center justify-center gap-1.5">
-            <Target className="size-3.5" />
-            Kas berkelanjutan, tanpa target
-          </p>
-        )}
-        {deadline ? (
-          <p className="flex items-center justify-center gap-1.5">
-            <CalendarRange className="size-3.5" />
-            Sampai {deadline}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  )
-
   return (
-    <main className="flex flex-1 flex-col justify-between px-6 pt-16 pb-10">
-      <div className="flex flex-col items-center gap-6">
-        <div className="bg-accent text-primary grid size-16 place-items-center rounded-3xl">
-          <BrandMark className="size-9" />
+    <main className="flex flex-1 flex-col justify-between pb-10">
+      <div>
+        <div className="ink-panel px-6 pt-14 pb-15 text-center">
+          <div className="text-ink-accent mx-auto mb-5 grid size-15 place-items-center rounded-[22px] bg-white/12">
+            <BrandMark className="size-[34px]" />
+          </div>
+          <p className="text-ink-muted text-[13px]">
+            <span className="text-ink-foreground font-bold">
+              {preview.invited_by_name ?? "Seseorang"}
+            </span>{" "}
+            mengundang kamu ke
+          </p>
+          <h1 className="mt-2 text-[26px] leading-[1.15] font-extrabold tracking-[-0.035em]">
+            {preview.group_name}
+          </h1>
         </div>
-        {card}
+
+        {/* Kartu ringkasan sengaja naik menimpa panel — menandai bahwa isinya
+            milik undangan di atasnya, bukan bagian halaman yang terpisah. */}
+        <div className="ink-card mx-5 -mt-9 rounded-3xl p-5 shadow-[0_6px_20px_rgba(20,40,50,0.08),0_0_0_1px_var(--border)]">
+          <div className="flex gap-2.5">
+            <Fact
+              label="Target"
+              value={goal ?? "Tanpa target"}
+              hint={goal ? undefined : "Kas berkelanjutan"}
+            />
+            <Fact label="Sampai" value={deadline ?? "Tidak dibatasi"} />
+          </div>
+        </div>
       </div>
 
-      {user ? (
-        <JoinConfirm token={token} groupName={preview.group_name ?? ""} />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {/* Setelah daftar, callback mengembalikan user ke halaman ini juga —
-              jadi dialog konfirmasi langsung muncul dan wizard bikin tabungan
-              di-skip, sesuai alur di spec. */}
-          <GoogleSignInButton
-            next={`/join/${token}`}
-            label="Daftar dengan Google"
-          />
-          <p className="text-muted-foreground text-center text-xs leading-relaxed">
-            Kamu perlu akun untuk bergabung. Setelah daftar, kamu langsung
-            kembali ke halaman ini.
-          </p>
-        </div>
-      )}
+      <div className="mt-8 flex flex-col gap-3 px-5">
+        {user ? (
+          <JoinConfirm token={token} groupName={preview.group_name ?? ""} />
+        ) : (
+          <>
+            {/* Setelah daftar, callback mengembalikan user ke halaman ini juga —
+                jadi dialog konfirmasi langsung muncul dan wizard bikin tabungan
+                di-skip, sesuai alur di spec. */}
+            <GoogleSignInButton
+              next={`/join/${token}`}
+              label="Daftar dengan Google"
+            />
+            <p className="text-muted-foreground text-center text-xs leading-relaxed">
+              Kamu perlu akun untuk bergabung. Setelah daftar, kamu langsung
+              kembali ke halaman ini.
+            </p>
+          </>
+        )}
+      </div>
     </main>
   )
 }
+
+const Fact = ({
+  label,
+  value,
+  hint,
+}: {
+  label: string
+  value: string
+  hint?: string
+}) => (
+  <div className="bg-background flex-1 rounded-2xl px-3.5 py-3">
+    <p className="text-muted-foreground text-[10px] font-bold tracking-[0.05em] uppercase">
+      {label}
+    </p>
+    <p className="tnum mt-1 text-[15px] font-extrabold tracking-[-0.02em]">
+      {value}
+    </p>
+    {hint ? (
+      <p className="text-muted-foreground mt-0.5 text-[10px]">{hint}</p>
+    ) : null}
+  </div>
+)
 
 const Problem = ({
   title,
@@ -157,13 +168,13 @@ const Problem = ({
   primaryHref?: string
   primaryLabel?: string
 }) => (
-  <main className="flex flex-1 flex-col justify-between px-6 pt-20 pb-10">
+  <main className="flex flex-1 flex-col justify-between px-6 pt-28 pb-10">
     <div className="flex flex-col items-center text-center">
-      <div className="bg-warn-surface text-warn mb-5 grid size-14 place-items-center rounded-2xl">
-        <TriangleAlert className="size-6" />
+      <div className="bg-warn-surface text-warn mb-5.5 grid size-16 place-items-center rounded-[22px]">
+        <TriangleAlert className="size-7" />
       </div>
-      <h1 className="text-lg font-extrabold tracking-tight">{title}</h1>
-      <p className="text-muted-foreground mt-2 max-w-[30ch] text-sm leading-relaxed">
+      <h1 className="text-xl font-extrabold tracking-[-0.03em]">{title}</h1>
+      <p className="text-muted-foreground mt-2.5 max-w-[30ch] text-sm leading-relaxed">
         {body}
       </p>
     </div>
@@ -171,23 +182,24 @@ const Problem = ({
     {primaryHref ? (
       <Link
         href={primaryHref}
-        className={cn(CTA, buttonVariants({ size: "lg" }))}
+        className={cn(
+          CTA,
+          buttonVariants({ size: "lg" }),
+          "ink-cta bg-ink hover:bg-ink/90 text-white",
+        )}
       >
         {primaryLabel ?? "Lanjut"}
       </Link>
-    ) : showHome ? (
-      <Link
-        href="/"
-        className={cn(CTA, buttonVariants({ size: "lg", variant: "outline" }))}
-      >
-        Ke tabungan saya
-      </Link>
     ) : (
       <Link
-        href="/login"
-        className={cn(CTA, buttonVariants({ size: "lg", variant: "outline" }))}
+        href={showHome ? "/" : "/login"}
+        className={cn(
+          CTA,
+          buttonVariants({ size: "lg", variant: "outline" }),
+          "bg-card",
+        )}
       >
-        Masuk
+        {showHome ? "Ke tabungan saya" : "Masuk"}
       </Link>
     )}
   </main>

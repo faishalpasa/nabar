@@ -45,13 +45,14 @@ export const GoogleSignInButton = ({
   }
 
   return (
+    // Pil putih penuh di atas panel ink — kontras tertinggi di layar itu, jadi
+    // tombolnya jadi satu-satunya titik terang selain logo.
     <Button
       type="button"
       onClick={signIn}
       disabled={loading}
-      variant="outline"
       size="lg"
-      className="h-12 w-full gap-3 rounded-xl text-[15px] font-semibold"
+      className="h-[52px] w-full gap-3 rounded-full bg-white text-[15px] font-bold text-[oklch(0.22_0.015_240)] hover:bg-white/90"
     >
       {loading ? (
         <Loader2 className="size-[18px] animate-spin" />
