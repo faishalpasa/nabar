@@ -25,6 +25,30 @@ alone — the point is that the command is never typed, not that it gets denied.
 - Applies to every PR/MR created, regardless of target branch (`main`,
   `release`, etc.).
 
+## Pre-Commit / Pre-Push Hooks
+
+Ported from `reklub/member-dashboard`'s `.husky/` setup (husky v9 +
+lint-staged), with one substitution: that project runs its Vitest suite in
+`pre-commit`; this one has no test suite, so `pre-commit` runs `tsc --noEmit`
+instead — the fast, whole-project safety check available here, catching
+exactly the class of bug ("this compiles" / "this doesn't") a pre-commit hook
+exists to catch early. If a real test suite is added later, add it back
+alongside the typecheck rather than replacing it.
+
+- **`.husky/pre-commit`** — `npm run typecheck` (`tsc --noEmit`, whole
+  project), then `npx lint-staged` (`eslint --cache --fix` on staged
+  `.js`/`.jsx`/`.ts`/`.tsx` files only). A file lint-staged can't
+  auto-fix aborts the commit; fix it and re-stage.
+- **`.husky/pre-push`** — `npm run build` (`next build`). This is the same
+  build Vercel runs on deploy; failing it locally before push is strictly
+  cheaper than finding out from a failed Vercel deployment, especially since
+  pushing to `main` deploys straight to production (see § Commit and Push
+  Policy above).
+- Both hooks are real, executable files checked into `.husky/` — they run for
+  every commit/push from every clone, not just this one. Don't bypass them
+  with `--no-verify` to work around a failure; fix the underlying typecheck,
+  lint, or build error instead.
+
 ## No Claude as Co-Author / Collaborator
 
 - Never add Claude, Anthropic, or any AI assistant as a co-author,

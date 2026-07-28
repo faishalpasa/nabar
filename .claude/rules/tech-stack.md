@@ -10,6 +10,10 @@
   library, no axios, no TanStack Query
 - ESLint flat config adapted from `reklub/member-dashboard`'s `.claude/rules` —
   double quotes, no semicolons, arrow-function components (see `eslint.config.mjs`)
+- husky v9 + lint-staged for git hooks (`.husky/pre-commit`, `.husky/pre-push`),
+  also adapted from `reklub/member-dashboard` — see `rules/git.md` § Pre-Commit
+  / Pre-Push Hooks for the one substitution (typecheck instead of a test suite,
+  since this project has no tests yet)
 
 ## Path Alias
 
