@@ -1,6 +1,6 @@
 "use client"
 
-import { Download, Share, Smartphone } from "lucide-react"
+import { Download, Share } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -106,18 +106,13 @@ export const PWAInstallPrompt = () => {
     >
       <DrawerContent>
         <div className="flex flex-col gap-[18px] p-[22px]">
-          <DrawerHeader className="flex-row items-center gap-3 p-0 text-left">
-            <span className="bg-accent text-accent-foreground grid size-[38px] shrink-0 place-items-center rounded-[14px]">
-              <Smartphone className="size-[18px]" strokeWidth={2.2} />
-            </span>
-            <div>
-              <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
-                {isIOS ? "Tambah ke layar utama" : "Instal Nabar"}
-              </DrawerTitle>
-              <DrawerDescription className="mt-0.5 text-xs">
-                Akses lebih cepat tanpa buka browser lagi.
-              </DrawerDescription>
-            </div>
+          <DrawerHeader className="p-0 text-left">
+            <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+              {isIOS ? "Tambah ke layar utama" : "Instal Nabar"}
+            </DrawerTitle>
+            <DrawerDescription className="mt-0.5 text-xs">
+              Akses lebih cepat tanpa buka browser lagi.
+            </DrawerDescription>
           </DrawerHeader>
 
           {isIOS ? (

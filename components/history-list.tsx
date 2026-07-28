@@ -237,22 +237,17 @@ export const HistoryList = ({
       >
         <DrawerContent>
           <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
-            <DrawerHeader className="flex-row items-center gap-3 p-0 text-left">
-              <span className="bg-bad-surface text-bad grid size-[38px] shrink-0 place-items-center rounded-[14px]">
-                <X className="size-[18px]" strokeWidth={2.4} />
-              </span>
-              <div>
-                <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
-                  {reasonTarget?.mode === "reject"
-                    ? "Tolak setoran ini?"
-                    : "Batalkan persetujuan?"}
-                </DrawerTitle>
-                <DrawerDescription className="mt-0.5 text-xs">
-                  {reasonTarget?.mode === "reject"
-                    ? `${reasonTarget?.tx.display_name.split(" ")[0]} bisa unggah ulang sebagai transaksi baru.`
-                    : "Transaksi kembali berstatus ditolak dan tidak lagi dihitung ke saldo."}
-                </DrawerDescription>
-              </div>
+            <DrawerHeader className="p-0 text-left">
+              <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+                {reasonTarget?.mode === "reject"
+                  ? "Tolak setoran ini?"
+                  : "Batalkan persetujuan?"}
+              </DrawerTitle>
+              <DrawerDescription className="mt-0.5 text-xs">
+                {reasonTarget?.mode === "reject"
+                  ? `${reasonTarget?.tx.display_name.split(" ")[0]} bisa unggah ulang sebagai transaksi baru.`
+                  : "Transaksi kembali berstatus ditolak dan tidak lagi dihitung ke saldo."}
+              </DrawerDescription>
             </DrawerHeader>
 
             <Textarea

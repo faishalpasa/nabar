@@ -64,18 +64,13 @@ export const InviteButton = ({ groupId }: { groupId: string }) => {
       >
         <DrawerContent>
           <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
-            <DrawerHeader className="flex-row items-center gap-3 p-0 text-left">
-              <span className="bg-accent text-accent-foreground grid size-[38px] shrink-0 place-items-center rounded-[14px]">
-                <UserPlus className="size-[18px]" strokeWidth={2.2} />
-              </span>
-              <div>
-                <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
-                  Link undangan siap
-                </DrawerTitle>
-                <DrawerDescription className="mt-0.5 text-xs">
-                  Sekali pakai · berlaku 14 hari
-                </DrawerDescription>
-              </div>
+            <DrawerHeader className="p-0 text-left">
+              <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+                Link undangan siap
+              </DrawerTitle>
+              <DrawerDescription className="mt-0.5 text-xs">
+                Sekali pakai · berlaku 14 hari
+              </DrawerDescription>
             </DrawerHeader>
 
             <div className="bg-background rounded-[18px] px-[15px] py-[13px]">
