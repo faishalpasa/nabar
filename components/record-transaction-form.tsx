@@ -1,22 +1,20 @@
 "use client"
 
-import { ImagePlus, Info, Loader2, X } from "lucide-react"
-import Image from "next/image"
+import { Info, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useRef, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 import { toast } from "sonner"
 
 import { recordTransaction } from "@/app/actions/transactions"
 import { AmountInput } from "@/components/amount-input"
+import { PhotoPicker } from "@/components/photo-picker"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { formatRupiah } from "@/lib/format"
-import { createClient } from "@/lib/supabase/client"
 import type { TxType } from "@/lib/types"
+import { removeProof, uploadProof } from "@/lib/upload-proof"
 
-const MAX_BYTES = 5 * 1024 * 1024
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/heic"]
 const DEPOSIT_PRESETS = [100_000, 250_000, 500_000, 1_000_000]
 
 type Props = {
@@ -35,12 +33,10 @@ export const RecordTransactionForm = ({
   balance,
 }: Props) => {
   const [file, setFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [amount, setAmount] = useState(0)
   const [note, setNote] = useState("")
   const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
-  const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
   const isWithdrawal = type === "withdrawal"
@@ -50,55 +46,15 @@ export const RecordTransactionForm = ({
   const canSubmit =
     amount > 0 && file !== null && (!noteRequired || note.trim().length > 0)
 
-  const pickFile = (selected: File | null) => {
-    if (!selected) return
-
-    if (!ACCEPTED.includes(selected.type)) {
-      toast.error("Format file tidak didukung", {
-        description: "Gunakan JPG, PNG, WEBP, atau HEIC.",
-      })
-      return
-    }
-    if (selected.size > MAX_BYTES) {
-      toast.error("Ukuran file terlalu besar", {
-        description: "Maksimal 5 MB per foto.",
-      })
-      return
-    }
-
-    setFile(selected)
-    setPreviewUrl(URL.createObjectURL(selected))
-  }
-
-  const clearFile = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setFile(null)
-    setPreviewUrl(null)
-    if (inputRef.current) inputRef.current.value = ""
-  }
-
   const submit = async () => {
     if (!file) return
 
     setUploading(true)
-
-    // Path WAJIB berpola {group_id}/{user_id}/{nama} — baik policy Storage
-    // maupun trigger transactions_before_insert memverifikasinya, supaya tidak
-    // ada yang bisa mengklaim bukti transfer orang lain.
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg"
-    const path = `${groupId}/${userId}/${crypto.randomUUID()}.${ext}`
-
-    const supabase = createClient()
-    const { error: uploadError } = await supabase.storage
-      .from("proofs")
-      .upload(path, file, { contentType: file.type, upsert: false })
-
+    const uploaded = await uploadProof(groupId, userId, file)
     setUploading(false)
 
-    if (uploadError) {
-      toast.error("Gagal mengunggah bukti", {
-        description: uploadError.message,
-      })
+    if ("error" in uploaded) {
+      toast.error("Gagal mengunggah bukti", { description: uploaded.error })
       return
     }
 
@@ -107,14 +63,14 @@ export const RecordTransactionForm = ({
         groupId,
         type,
         amount,
-        proofPath: path,
+        proofPath: uploaded.path,
         note,
       })
 
       if (error) {
         // File sudah terunggah tapi transaksinya gagal. Bersihkan supaya tidak
         // meninggalkan objek nyangkut di bucket.
-        await supabase.storage.from("proofs").remove([path])
+        await removeProof(uploaded.path)
         toast.error("Gagal menyimpan transaksi", { description: error })
         return
       }
@@ -165,49 +121,7 @@ export const RecordTransactionForm = ({
             </span>
           </Label>
 
-          <input
-            ref={inputRef}
-            type="file"
-            accept={ACCEPTED.join(",")}
-            capture="environment"
-            className="sr-only"
-            id="proof"
-            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
-          />
-
-          {previewUrl ? (
-            <div className="bg-card relative overflow-hidden rounded-[20px] shadow-[0_0_0_1px_var(--border)]">
-              <Image
-                src={previewUrl}
-                alt="Pratinjau bukti transfer"
-                width={400}
-                height={400}
-                unoptimized
-                className="max-h-[190px] w-full object-contain"
-              />
-              <button
-                type="button"
-                onClick={clearFile}
-                aria-label="Hapus foto"
-                className="focus-visible:ring-ring absolute top-2.5 right-2.5 grid size-8 place-items-center rounded-full bg-[oklch(0.22_0.015_240_/_0.7)] text-white focus-visible:ring-2 focus-visible:outline-none"
-              >
-                <X className="size-[15px]" strokeWidth={2.4} />
-              </button>
-            </div>
-          ) : (
-            <label
-              htmlFor="proof"
-              className="bg-card focus-within:ring-ring hover:bg-muted/40 flex h-[150px] cursor-pointer flex-col items-center justify-center gap-2.5 rounded-[20px] shadow-[0_0_0_1.5px_var(--input)] transition-colors focus-within:ring-2"
-            >
-              <span className="bg-accent text-accent-foreground grid size-11 place-items-center rounded-2xl">
-                <ImagePlus className="size-[21px]" />
-              </span>
-              <span className="text-sm font-bold">Ambil atau pilih foto</span>
-              <span className="text-muted-foreground text-[11px]">
-                JPG, PNG, WEBP, atau HEIC · maksimal 5 MB
-              </span>
-            </label>
-          )}
+          <PhotoPicker file={file} onFileChange={setFile} />
         </div>
 
         <div className="flex flex-col gap-2.5">

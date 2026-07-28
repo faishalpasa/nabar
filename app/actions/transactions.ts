@@ -98,6 +98,31 @@ export async function unapproveTransaction(
 }
 
 /**
+ * Owner mengganti foto bukti transaksi yang dia buat sendiri.
+ *
+ * File baru sudah diunggah ke Storage oleh client sebelum action ini dipanggil
+ * (path proofnya dikirim di sini) — trigger transactions_guard_update yang
+ * memvalidasi bahwa path itu benar-benar milik owner+grup ini, transaksinya
+ * miliknya sendiri, dan belum rejected. Perubahan tercatat sebagai baris
+ * "proof_edited" di transaction_events, terpisah dari riwayat transaksi yang
+ * dilihat member — bukan menimpa jejaknya.
+ */
+export async function editTransactionProof(
+  txId: string,
+  groupId: string,
+  proofPath: string,
+) {
+  if (!proofPath) return { error: "Bukti baru belum terunggah." }
+
+  return mutateTransaction(
+    txId,
+    groupId,
+    { proof_path: proofPath },
+    "Kamu tidak punya izin mengedit bukti transaksi ini.",
+  )
+}
+
+/**
  * Mencatat transaksi setelah file bukti berhasil diunggah dari browser.
  *
  * `status`, `created_at`, dan field verifikasi sengaja tidak dikirim — semuanya
@@ -140,8 +165,18 @@ export async function recordTransaction(input: {
   return {}
 }
 
-/** URL bertanda-tangan untuk menampilkan foto bukti dari bucket privat. */
-export async function getProofUrl(proofPath: string) {
+/**
+ * URL bertanda-tangan untuk menampilkan foto bukti dari bucket privat.
+ *
+ * Tipe kembalian dianotasi eksplisit: tanpa ini, TypeScript menyimpulkan union
+ * dari kedua `return` dengan companion `url?: undefined` / `error?: undefined`
+ * tersirat di masing-masing cabang, dan itu membuat narrowing `"url" in result`
+ * di pemanggil gagal diam-diam — `result.url` tetap bertipe `string | undefined`
+ * walau baris itu sudah lolos pengecekan `"url" in result`.
+ */
+export async function getProofUrl(
+  proofPath: string,
+): Promise<{ url: string } | { error: string }> {
   const supabase = await createClient()
   const { data, error } = await supabase.storage
     .from("proofs")

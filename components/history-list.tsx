@@ -6,6 +6,7 @@ import {
   Check,
   Clock,
   Eye,
+  Pencil,
   Receipt,
   X,
 } from "lucide-react"
@@ -20,6 +21,7 @@ import {
   unapproveTransaction,
 } from "@/app/actions/transactions"
 import { tintFor } from "@/components/avatar-stack"
+import { EditProofDialog } from "@/components/edit-proof-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -59,6 +61,7 @@ export const HistoryList = ({
 }: Props) => {
   const [reasonTarget, setReasonTarget] = useState<ReasonTarget | null>(null)
   const [reason, setReason] = useState("")
+  const [editTarget, setEditTarget] = useState<TransactionFeedRow | null>(null)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -219,6 +222,7 @@ export const HistoryList = ({
                     setReason("")
                     setReasonTarget({ tx, mode: "unapprove" })
                   }}
+                  onEditProof={() => setEditTarget(tx)}
                 />
               </li>
             ))}
@@ -298,6 +302,18 @@ export const HistoryList = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {editTarget ? (
+        <EditProofDialog
+          open={editTarget !== null}
+          onOpenChange={(open) => !open && setEditTarget(null)}
+          txId={editTarget.id}
+          groupId={groupId}
+          userId={currentUserId}
+          currentProofPath={editTarget.proof_path}
+          onSaved={() => router.refresh()}
+        />
+      ) : null}
     </>
   )
 }
@@ -309,6 +325,7 @@ const TransactionRow = ({
   disabled,
   onViewProof,
   onUnapprove,
+  onEditProof,
 }: {
   tx: TransactionFeedRow
   isMine: boolean
@@ -316,6 +333,7 @@ const TransactionRow = ({
   disabled: boolean
   onViewProof: () => void
   onUnapprove: () => void
+  onEditProof: () => void
 }) => {
   const who = isMine ? "Kamu" : tx.display_name
   const isWithdrawal = tx.type === "withdrawal"
@@ -393,6 +411,17 @@ const TransactionRow = ({
         >
           <Eye className="size-[15px]" strokeWidth={2.2} />
         </button>
+
+        {isOwner && isMine && tx.status !== "rejected" ? (
+          <button
+            type="button"
+            onClick={onEditProof}
+            aria-label="Ganti bukti transfer"
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-lg p-1.5 focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <Pencil className="size-[15px]" strokeWidth={2.2} />
+          </button>
+        ) : null}
 
         {isOwner && tx.status === "verified" && !isWithdrawal && !isMine ? (
           <button

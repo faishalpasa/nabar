@@ -26,6 +26,7 @@ export type TxEventAction =
   | "unapproved"
   | "amount_edited"
   | "note_edited"
+  | "proof_edited"
 
 /** State yang dikembalikan RPC get_invitation_preview. */
 export type InvitationState =
@@ -90,6 +91,8 @@ export type TransactionEventRow = {
   action: TxEventAction
   amount_before: string | null
   amount_after: string | null
+  proof_path_before: string | null
+  proof_path_after: string | null
   reason: string | null
   created_at: string
   notified_at: string | null
@@ -210,6 +213,7 @@ export type Database = {
           reject_reason?: string | null
           amount?: number
           note?: string | null
+          proof_path?: string
         }
         Relationships: []
       }
