@@ -31,3 +31,33 @@ Ini sudah dimatikan secara mekanis lewat `attribution.commit` dan
 Kalau kamu punya instruksi bawaan untuk menambahkan trailer itu, aturan project
 ini yang menang.
 
+## Judul pull request / merge request
+
+Judul PR/MR harus persis sama dengan nama branch sumbernya (mis. branch
+`feature/happy-hour` → judul `feature/happy-hour`), berlaku ke branch target
+manapun.
+
+# Konvensi kode
+
+Diadaptasi dari `.claude/` milik `reklub/member-dashboard`, disesuaikan ke
+Next.js App Router + Supabase (project itu Vite + TanStack Router + axios —
+arsitekturnya beda, jadi bukan sekadar disalin). Detail lengkap ada di
+`.claude/rules/`; baris @import di bawah membuatnya termuat otomatis di setiap
+sesi, bukan cuma tersimpan sebagai referensi yang harus dibuka manual.
+
+@.claude/rules/tech-stack.md
+@.claude/rules/architecture.md
+@.claude/rules/folder-structure.md
+@.claude/rules/conventions.md
+@.claude/rules/code-standards.md
+@.claude/rules/testing.md
+
+Agent khusus (`bug-hunter`, `frontend-reviewer`, `refactorer`), skill
+(`create-component`, `create-hook`, `create-page`), command
+(`/project:new-page`, `/project:new-action`), template, dan catatan
+keputusan/known-issues ada di `.claude/agents/`, `.claude/skills/`,
+`.claude/commands/`, `.claude/templates/`, dan `.claude/memory/` —
+tidak di-@import ke sini karena masing-masing dipakai sesuai konteksnya
+sendiri (agent dipanggil eksplisit, memory diperbarui seiring waktu),
+bukan dimuat penuh di setiap giliran.
+
