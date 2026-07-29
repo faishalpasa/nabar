@@ -1,11 +1,9 @@
 "use client"
 
-import { ArrowDownToLine, ArrowUpFromLine, Clock } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 
 import { getProofUrl } from "@/app/actions/transactions"
-import { tintFor } from "@/components/avatar-stack"
 import { Button } from "@/components/ui/button"
 import {
   Drawer,
@@ -14,7 +12,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { formatDateTime, formatRupiah, initials } from "@/lib/format"
+import { formatDateTime, formatRupiah } from "@/lib/format"
 import type { TransactionFeedRow } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -47,11 +45,6 @@ export const TransactionDetailDrawer = ({
 
   const isWithdrawal = tx.type === "withdrawal"
   const tone = STATUS_TONE[tx.status]
-  const Icon = isWithdrawal
-    ? ArrowUpFromLine
-    : tx.status === "pending"
-      ? Clock
-      : ArrowDownToLine
   const sign = tx.status === "verified" ? (isWithdrawal ? "−" : "+") : ""
   const noteLabel = tx.status === "rejected" ? "Alasan ditolak" : "Catatan"
   const noteValue = tx.status === "rejected" ? tx.reject_reason : tx.note
@@ -60,30 +53,14 @@ export const TransactionDetailDrawer = ({
     <Drawer open={open} showSwipeHandle onOpenChange={onOpenChange}>
       <DrawerContent>
         <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
-          <DrawerHeader className="flex-row items-center gap-3 p-0 text-left">
-            <span
-              className={cn(
-                "grid size-11 shrink-0 place-items-center rounded-full text-xs font-bold",
-                isWithdrawal
-                  ? "bg-neutral-surface text-foreground/80"
-                  : tintFor(tx.user_id),
-              )}
-            >
-              {isWithdrawal ? (
-                <Icon className="size-[18px]" strokeWidth={2.2} />
-              ) : (
-                initials(tx.display_name)
-              )}
-            </span>
-            <div className="min-w-0 flex-1">
-              <DrawerTitle className="truncate text-base font-extrabold tracking-[-0.02em]">
-                {isWithdrawal ? "Tarik dana" : tx.display_name}
-              </DrawerTitle>
-              <p className="text-muted-foreground text-[11px]">
-                {formatDateTime(tx.created_at)}
-                {isWithdrawal ? ` · oleh ${tx.display_name}` : ""}
-              </p>
-            </div>
+          <DrawerHeader className="p-0 text-left">
+            <DrawerTitle className="truncate text-base font-extrabold tracking-[-0.02em]">
+              {isWithdrawal ? "Tarik dana" : tx.display_name}
+            </DrawerTitle>
+            <p className="text-muted-foreground text-[11px]">
+              {formatDateTime(tx.created_at)}
+              {isWithdrawal ? ` · oleh ${tx.display_name}` : ""}
+            </p>
           </DrawerHeader>
 
           <div className="bg-background flex items-center justify-between rounded-[18px] px-[15px] py-[13px]">
