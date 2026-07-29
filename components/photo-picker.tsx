@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useEffect, useId, useMemo } from "react"
 import { toast } from "sonner"
 
-export const PHOTO_MAX_BYTES = 5 * 1024 * 1024
+export const PHOTO_MAX_BYTES = 25 * 1024 * 1024
 export const PHOTO_ACCEPTED = [
   "image/jpeg",
   "image/png",
@@ -61,7 +61,7 @@ export const PhotoPicker = ({
     }
     if (selected.size > PHOTO_MAX_BYTES) {
       toast.error("Ukuran file terlalu besar", {
-        description: "Maksimal 5 MB per foto.",
+        description: "Maksimal 25 MB per foto.",
       })
       return false
     }
@@ -137,7 +137,7 @@ export const PhotoPicker = ({
       )}
 
       <p className="text-muted-foreground text-[11px]">
-        JPG, PNG, WEBP, atau HEIC · maksimal 5 MB
+        JPG, PNG, WEBP, atau HEIC · maksimal 25 MB
       </p>
     </div>
   )
