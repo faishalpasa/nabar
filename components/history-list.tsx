@@ -5,6 +5,7 @@ import {
   ArrowUpFromLine,
   Check,
   Clock,
+  Eye,
   Pencil,
   Receipt,
   X,
@@ -328,16 +329,21 @@ const TransactionRow = ({
   onUnapprove: () => void
   onEditTransaction: () => void
 }) => {
-  const who = isMine ? "Kamu" : tx.display_name
   const isWithdrawal = tx.type === "withdrawal"
 
-  const { Icon, tone, title, detail, amountClass } = (() => {
+  const statusLabel =
+    tx.status === "pending"
+      ? "Menunggu persetujuan"
+      : tx.status === "rejected"
+        ? "Ditolak"
+        : "Terverifikasi"
+
+  const { Icon, tone, title, amountClass } = (() => {
     if (tx.status === "rejected") {
       return {
         Icon: X,
         tone: "bg-bad-surface text-bad",
-        title: isMine ? "Setoranmu ditolak" : `Setoran ${who} ditolak`,
-        detail: tx.reject_reason,
+        title: tx.display_name,
         amountClass: "text-muted-foreground line-through",
       }
     }
@@ -346,7 +352,6 @@ const TransactionRow = ({
         Icon: Clock,
         tone: "bg-warn-surface text-warn",
         title: `${tx.display_name} setor`,
-        detail: "menunggu persetujuan owner",
         amountClass: "text-muted-foreground",
       }
     }
@@ -357,7 +362,6 @@ const TransactionRow = ({
         Icon: ArrowUpFromLine,
         tone: "bg-neutral-surface text-foreground/80",
         title: "Tarik dana",
-        detail: tx.note,
         amountClass: "text-muted-foreground",
       }
     }
@@ -365,7 +369,6 @@ const TransactionRow = ({
       Icon: ArrowDownToLine,
       tone: "bg-ok-surface text-ok",
       title: `${tx.display_name} setor`,
-      detail: tx.note ?? "terverifikasi",
       amountClass: "text-[oklch(0.42_0.09_160)]",
     }
   })()
@@ -374,35 +377,36 @@ const TransactionRow = ({
 
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
-      <button
-        type="button"
-        onClick={onOpenDetail}
-        className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:outline-none"
+      <span
+        className={cn(
+          "grid size-[34px] shrink-0 place-items-center rounded-full",
+          tone,
+        )}
       >
-        <span
-          className={cn(
-            "grid size-[34px] shrink-0 place-items-center rounded-full",
-            tone,
-          )}
-        >
-          <Icon className="size-4" strokeWidth={2.2} />
-        </span>
+        <Icon className="size-4" strokeWidth={2.2} />
+      </span>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold">{title}</p>
-          <p className="text-muted-foreground truncate text-[11px]">
-            {formatDateTime(tx.created_at)}
-            {detail ? ` · ${detail}` : ""}
-            {tx.was_edited ? " · nominal diedit" : ""}
-          </p>
-        </div>
-      </button>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold">{title}</p>
+        <p className="text-muted-foreground truncate text-[11px]">
+          {formatDateTime(tx.created_at)} - {statusLabel}
+        </p>
+      </div>
 
       <div className="flex shrink-0 items-center gap-1">
         <span className={cn("tnum text-sm font-bold", amountClass)}>
           {sign}
           {formatRupiah(tx.amount)}
         </span>
+
+        <button
+          type="button"
+          onClick={onOpenDetail}
+          aria-label="Lihat detail"
+          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-lg p-1.5 focus-visible:ring-2 focus-visible:outline-none"
+        >
+          <Eye className="size-[15px]" strokeWidth={2.2} />
+        </button>
 
         {isOwner && isMine && tx.status !== "rejected" ? (
           <button
