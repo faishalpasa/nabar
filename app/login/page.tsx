@@ -1,4 +1,4 @@
-import { BrandMark } from "@/components/brand"
+import { BrandLockupTagline } from "@/components/brand"
 import { GoogleSignInButton } from "@/components/google-sign-in-button"
 
 export const metadata = { title: "Masuk · Nabar" }
@@ -15,14 +15,9 @@ const LoginPage = async ({
   return (
     <main className="bg-ink text-ink-foreground flex min-h-dvh flex-1 flex-col justify-between px-6 pt-24 pb-10">
       <div className="flex flex-col items-center text-center">
-        <div className="text-ink-accent mb-7 grid size-20 place-items-center rounded-[28px] bg-white/12">
-          <BrandMark className="size-11" />
-        </div>
+        <BrandLockupTagline className="mb-7" />
 
-        <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">
-          Nabar
-        </h1>
-        <p className="text-ink-muted mt-3 max-w-[26ch] text-[15px] leading-relaxed">
+        <p className="text-ink-muted max-w-[26ch] text-[15px] leading-relaxed">
           Catat tabungan dan kas bareng teman, lengkap dengan bukti transfernya.
         </p>
 

@@ -37,6 +37,87 @@ export const BrandMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
+/**
+ * Lockup ikon+wordmark final ("Nabar") sebagai satu gambar SVG utuh — bukan
+ * ikon di samping teks terpisah, supaya jarak dan proporsi keduanya tidak
+ * bisa bergeser saat dipakai di tempat lain. Versi "reversed": warna tetap
+ * (bukan currentColor) karena lockup ini hanya dipakai di atas panel gelap
+ * (`--ink`). Untuk header aplikasi & favicon selalu pakai varian tanpa
+ * tagline ini — lihat design_handoff_ink project, section 7a.
+ */
+export const BrandLockup = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 -13.45 94.513 26.9"
+    role="img"
+    aria-label="Nabar"
+    className={cn("h-5 w-auto", className)}
+  >
+    <g transform="translate(-8.5,-20.05)">
+      <g fill="none" strokeLinecap="round">
+        <path d="M11 31V12" stroke="var(--ink-foreground)" strokeWidth="5" />
+        <path d="m11 12 16 17" stroke="var(--ink-foreground)" strokeWidth="5" />
+        <path d="M27 29v-9" stroke="var(--ink-foreground)" strokeWidth="5" />
+      </g>
+      <circle cx="27" cy="11" r="4.4" fill="var(--nb-coral)" />
+    </g>
+    <text
+      x="27.154"
+      y="8.928"
+      fontWeight="700"
+      fontSize="24.8"
+      letterSpacing="-1.24"
+      fill="var(--ink-foreground)"
+      style={{ fontFamily: "var(--font-outfit), sans-serif" }}
+    >
+      Nabar
+    </text>
+  </svg>
+)
+
+/**
+ * Sama seperti `BrandLockup`, ditambah tagline "Nabung bareng, tanpa ribet."
+ * — dipakai di layar pembuka (login) yang butuh penuh identitas, bukan di
+ * header (lihat komentar di `BrandLockup` § kapan pakai varian tanpa tagline).
+ */
+export const BrandLockupTagline = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 -13.45 125.524 28.972"
+    role="img"
+    aria-label="Nabar — Nabung bareng, tanpa ribet."
+    className={cn("h-14 w-auto", className)}
+  >
+    <g transform="translate(-8.5,-20.05)">
+      <g fill="none" strokeLinecap="round">
+        <path d="M11 31V12" stroke="var(--ink-foreground)" strokeWidth="5" />
+        <path d="m11 12 16 17" stroke="var(--ink-foreground)" strokeWidth="5" />
+        <path d="M27 29v-9" stroke="var(--ink-foreground)" strokeWidth="5" />
+      </g>
+      <circle cx="27" cy="11" r="4.4" fill="var(--nb-coral)" />
+    </g>
+    <text
+      x="27.154"
+      y="4.564"
+      fontWeight="700"
+      fontSize="24.8"
+      letterSpacing="-1.24"
+      fill="var(--ink-foreground)"
+      style={{ fontFamily: "var(--font-outfit), sans-serif" }}
+    >
+      Nabar
+    </text>
+    <text
+      x="27.154"
+      y="13.292"
+      fontWeight="500"
+      fontSize="7.4"
+      letterSpacing="-0.037"
+      fill="var(--ink-accent)"
+    >
+      Nabung bareng, tanpa ribet.
+    </text>
+  </svg>
+)
+
 export const GoogleGlyph = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 18 18"

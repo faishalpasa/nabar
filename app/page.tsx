@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { AccountMenu } from "@/components/account-menu"
 import { type StackedMember } from "@/components/avatar-stack"
-import { BrandMark } from "@/components/brand"
+import { BrandLockup } from "@/components/brand"
 import { EmptyState, GroupCard } from "@/components/group-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { buttonVariants } from "@/components/ui/button"
@@ -54,11 +54,8 @@ const HomePage = async () => {
     <main className="flex flex-1 flex-col">
       <header className="ink-panel px-4 pt-4 pb-6">
         <div className="flex items-center gap-3">
-          <div className="text-ink-accent flex flex-1 items-center gap-[7px]">
-            <BrandMark className="size-5" />
-            <span className="text-ink-foreground text-[13px] font-bold tracking-[-0.02em]">
-              Nabar
-            </span>
+          <div className="flex-1">
+            <BrandLockup />
           </div>
 
           <AccountMenu>
