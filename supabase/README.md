@@ -69,6 +69,7 @@ Frontend tidak perlu (dan tidak bisa) menentukan hal-hal ini:
 | --- | --- |
 | Deposit owner auto-verified, deposit member `pending` | trigger `transactions_before_insert` |
 | Withdrawal hanya owner, selalu auto-verified | trigger + constraint `transactions_withdrawal_always_verified` |
+| Withdrawal (baru maupun diedit) tidak boleh melebihi saldo pool | trigger `transactions_before_insert` + `transactions_guard_update` |
 | Bukti wajib untuk semua jenis transaksi | `proof_path not null` |
 | Catatan wajib untuk withdrawal, opsional untuk deposit | constraint `transactions_withdrawal_needs_note` |
 | Reject wajib pakai alasan | constraint `transactions_reject_needs_reason` |
@@ -159,10 +160,16 @@ model ini salah — orang kedua akan dapat error "undangan sudah dipakai". Versi
 multi-pakai butuh `max_uses` (atau tanpa batas) dan `invitation_uses` terpisah,
 bukan `accepted_by` tunggal.
 
-**2. Boleh withdrawal melebihi saldo?**
-Sekarang tidak dicegah — saldo bisa jadi negatif. Untuk kas patungan itu mungkin
-wajar (ada yang nalangin dulu), untuk tabungan target rasanya tidak. Kalau perlu
-dicegah, tambahannya satu trigger yang menghitung saldo sebelum insert.
+**2. ~~Boleh withdrawal melebihi saldo?~~ — Sudah diputuskan: tidak boleh.**
+Ditutup lewat migrasi `20260729083133_limit_withdrawal_to_balance.sql`.
+`tg_transactions_before_insert` menolak withdrawal baru yang nominalnya lebih
+besar dari `SUM(deposit verified) - SUM(withdrawal verified)` grup itu, dan
+`tg_transactions_guard_update` menerapkan batas yang sama saat owner mengedit
+nominal withdrawal yang sudah ada (dengan `old.amount` ditambahkan kembali ke
+saldo pembanding, karena baris itu sendiri masih ikut terhitung sampai UPDATE
+commit). Diuji ke database sungguhan: melebihi saldo ditolak, tepat sama
+dengan saldo (boundary) diizinkan, dan edit nominal ke atas tetap tunduk batas
+yang sama.
 
 **3. Member boleh edit nominal transaksinya sendiri?**
 Spec menaruh "edit nominal transaksi miliknya sendiri" hanya di bawah **Aksi

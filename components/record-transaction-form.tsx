@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { formatRupiah } from "@/lib/format"
 import type { TxType } from "@/lib/types"
 import { removeProof, uploadProof } from "@/lib/upload-proof"
+import { cn } from "@/lib/utils"
 
 const DEPOSIT_PRESETS = [100_000, 250_000, 500_000, 1_000_000]
 
@@ -43,8 +44,13 @@ export const RecordTransactionForm = ({
   const noteRequired = isWithdrawal
   const busy = uploading || pending
 
+  const exceedsBalance = isWithdrawal && amount > Number(balance)
+
   const canSubmit =
-    amount > 0 && file !== null && (!noteRequired || note.trim().length > 0)
+    amount > 0 &&
+    !exceedsBalance &&
+    file !== null &&
+    (!noteRequired || note.trim().length > 0)
 
   const submit = async () => {
     if (!file) return
@@ -106,9 +112,17 @@ export const RecordTransactionForm = ({
           />
 
           {isWithdrawal && amount > 0 ? (
-            <p className="tnum text-muted-foreground text-[11px]">
-              Sisa saldo setelah ditarik: {formatRupiah(after)}
-              {after < 0 ? " — saldo jadi minus" : ""}
+            <p
+              className={cn(
+                "tnum text-[11px]",
+                exceedsBalance
+                  ? "text-bad font-semibold"
+                  : "text-muted-foreground",
+              )}
+            >
+              {exceedsBalance
+                ? `Melebihi saldo — maksimal ${formatRupiah(balance)}`
+                : `Sisa saldo setelah ditarik: ${formatRupiah(after)}`}
             </p>
           ) : null}
         </div>

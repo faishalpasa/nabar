@@ -5,7 +5,6 @@ import {
   ArrowUpFromLine,
   Check,
   Clock,
-  Eye,
   Pencil,
   Receipt,
   X,
@@ -16,12 +15,12 @@ import { toast } from "sonner"
 
 import {
   approveTransaction,
-  getProofUrl,
   rejectTransaction,
   unapproveTransaction,
 } from "@/app/actions/transactions"
 import { tintFor } from "@/components/avatar-stack"
 import { EditTransactionDialog } from "@/components/edit-transaction-dialog"
+import { TransactionDetailDrawer } from "@/components/transaction-detail-drawer"
 import { Button } from "@/components/ui/button"
 import {
   Drawer,
@@ -62,6 +61,9 @@ export const HistoryList = ({
   const [reasonTarget, setReasonTarget] = useState<ReasonTarget | null>(null)
   const [reason, setReason] = useState("")
   const [editTarget, setEditTarget] = useState<TransactionFeedRow | null>(null)
+  const [detailTarget, setDetailTarget] = useState<TransactionFeedRow | null>(
+    null,
+  )
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -118,15 +120,6 @@ export const HistoryList = ({
     })
   }
 
-  const viewProof = async (tx: TransactionFeedRow) => {
-    const result = await getProofUrl(tx.proof_path)
-    if ("error" in result) {
-      toast.error(result.error)
-      return
-    }
-    window.open(result.url, "_blank", "noopener,noreferrer")
-  }
-
   if (rows.length === 0) {
     return (
       <div className="ink-card rounded-[26px] px-6 py-10 text-center">
@@ -149,7 +142,11 @@ export const HistoryList = ({
           key={tx.id}
           className="bg-card mb-3 rounded-lg p-3.5 shadow-[0_0_0_1.5px_oklch(0.83_0.10_78)]"
         >
-          <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setDetailTarget(tx)}
+            className="focus-visible:ring-ring flex w-full items-center gap-2.5 rounded-lg text-left focus-visible:ring-2 focus-visible:outline-none"
+          >
             <span
               className={cn(
                 "grid size-[34px] shrink-0 place-items-center rounded-full text-[11px] font-bold",
@@ -168,18 +165,9 @@ export const HistoryList = ({
             <span className="tnum text-base font-extrabold">
               {formatRupiah(tx.amount)}
             </span>
-          </div>
+          </button>
 
           <div className="mt-3 flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => viewProof(tx)}
-              className="bg-muted text-foreground/80 hover:bg-muted/70 h-[38px] flex-1 gap-1.5 rounded-xl text-[13px] font-semibold"
-            >
-              <Eye className="size-[15px]" strokeWidth={2.2} />
-              Lihat bukti
-            </Button>
-
             <Button
               aria-label={`Tolak setoran ${tx.display_name}`}
               disabled={pending}
@@ -217,7 +205,7 @@ export const HistoryList = ({
                   isMine={tx.user_id === currentUserId}
                   isOwner={isOwner}
                   disabled={pending}
-                  onViewProof={() => viewProof(tx)}
+                  onOpenDetail={() => setDetailTarget(tx)}
                   onUnapprove={() => {
                     setReason("")
                     setReasonTarget({ tx, mode: "unapprove" })
@@ -313,6 +301,12 @@ export const HistoryList = ({
           onSaved={() => router.refresh()}
         />
       ) : null}
+
+      <TransactionDetailDrawer
+        open={detailTarget !== null}
+        onOpenChange={(open) => !open && setDetailTarget(null)}
+        tx={detailTarget}
+      />
     </>
   )
 }
@@ -322,7 +316,7 @@ const TransactionRow = ({
   isMine,
   isOwner,
   disabled,
-  onViewProof,
+  onOpenDetail,
   onUnapprove,
   onEditTransaction,
 }: {
@@ -330,7 +324,7 @@ const TransactionRow = ({
   isMine: boolean
   isOwner: boolean
   disabled: boolean
-  onViewProof: () => void
+  onOpenDetail: () => void
   onUnapprove: () => void
   onEditTransaction: () => void
 }) => {
@@ -351,16 +345,18 @@ const TransactionRow = ({
       return {
         Icon: Clock,
         tone: "bg-warn-surface text-warn",
-        title: `${who} setor`,
+        title: `${tx.display_name} setor`,
         detail: "menunggu persetujuan owner",
         amountClass: "text-muted-foreground",
       }
     }
     if (isWithdrawal) {
+      // Tanpa nama pelaku: withdrawal cuma bisa dilakukan owner, jadi
+      // menyebut namanya di sini cuma redundan.
       return {
         Icon: ArrowUpFromLine,
         tone: "bg-neutral-surface text-foreground/80",
-        title: `${who} tarik dana`,
+        title: "Tarik dana",
         detail: tx.note,
         amountClass: "text-muted-foreground",
       }
@@ -368,7 +364,7 @@ const TransactionRow = ({
     return {
       Icon: ArrowDownToLine,
       tone: "bg-ok-surface text-ok",
-      title: `${who} setor`,
+      title: `${tx.display_name} setor`,
       detail: tx.note ?? "terverifikasi",
       amountClass: "text-[oklch(0.42_0.09_160)]",
     }
@@ -378,38 +374,35 @@ const TransactionRow = ({
 
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
-      <span
-        className={cn(
-          "grid size-[34px] shrink-0 place-items-center rounded-full",
-          tone,
-        )}
+      <button
+        type="button"
+        onClick={onOpenDetail}
+        className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:outline-none"
       >
-        <Icon className="size-4" strokeWidth={2.2} />
-      </span>
+        <span
+          className={cn(
+            "grid size-[34px] shrink-0 place-items-center rounded-full",
+            tone,
+          )}
+        >
+          <Icon className="size-4" strokeWidth={2.2} />
+        </span>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold">{title}</p>
-        <p className="text-muted-foreground truncate text-[11px]">
-          {formatDateTime(tx.created_at)}
-          {detail ? ` · ${detail}` : ""}
-          {tx.was_edited ? " · nominal diedit" : ""}
-        </p>
-      </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold">{title}</p>
+          <p className="text-muted-foreground truncate text-[11px]">
+            {formatDateTime(tx.created_at)}
+            {detail ? ` · ${detail}` : ""}
+            {tx.was_edited ? " · nominal diedit" : ""}
+          </p>
+        </div>
+      </button>
 
       <div className="flex shrink-0 items-center gap-1">
         <span className={cn("tnum text-sm font-bold", amountClass)}>
           {sign}
           {formatRupiah(tx.amount)}
         </span>
-
-        <button
-          type="button"
-          onClick={onViewProof}
-          aria-label="Lihat bukti"
-          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-lg p-1.5 focus-visible:ring-2 focus-visible:outline-none"
-        >
-          <Eye className="size-[15px]" strokeWidth={2.2} />
-        </button>
 
         {isOwner && isMine && tx.status !== "rejected" ? (
           <button
