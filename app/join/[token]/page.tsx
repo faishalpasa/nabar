@@ -79,7 +79,7 @@ const JoinPage = async ({ params }: { params: Promise<{ token: string }> }) => {
   const deadline = formatDate(preview.goal_deadline)
 
   return (
-    <main className="flex flex-1 flex-col justify-between pb-10">
+    <main className="flex min-h-dvh flex-1 flex-col justify-between pb-10">
       <div>
         <div className="ink-panel px-6 pt-14 pb-15 text-center">
           <div className="text-ink-accent mx-auto mb-5 grid size-15 place-items-center rounded-[22px] bg-white/12">
@@ -168,7 +168,7 @@ const Problem = ({
   primaryHref?: string
   primaryLabel?: string
 }) => (
-  <main className="flex flex-1 flex-col justify-between px-6 pt-28 pb-10">
+  <main className="flex min-h-dvh flex-1 flex-col justify-between px-6 pt-28 pb-10">
     <div className="flex flex-col items-center text-center">
       <div className="bg-warn-surface text-warn mb-5.5 grid size-16 place-items-center rounded-[22px]">
         <TriangleAlert className="size-7" />

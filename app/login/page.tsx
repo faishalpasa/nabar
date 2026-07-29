@@ -13,7 +13,7 @@ const LoginPage = async ({
   const { next, error } = await searchParams
 
   return (
-    <main className="bg-ink text-ink-foreground flex flex-1 flex-col justify-between px-6 pt-24 pb-10">
+    <main className="bg-ink text-ink-foreground flex min-h-dvh flex-1 flex-col justify-between px-6 pt-24 pb-10">
       <div className="flex flex-col items-center text-center">
         <div className="text-ink-accent mb-7 grid size-20 place-items-center rounded-[28px] bg-white/12">
           <BrandMark className="size-11" />
