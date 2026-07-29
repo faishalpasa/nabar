@@ -22,10 +22,10 @@ const layout = (
 ) => `
 <div style="margin:0;padding:24px 12px;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:14px;padding:28px 24px;">
-    <p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0f8f88;">Nabung Bareng</p>
+    <p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#B94834;">Nabar</p>
     <h1 style="margin:0 0 16px;font-size:19px;line-height:1.35;color:#1f2933;">${heading}</h1>
     ${body}
-    <a href="${ctaUrl}" style="display:inline-block;margin-top:22px;padding:12px 20px;background:#0f8f88;color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;">${ctaLabel}</a>
+    <a href="${ctaUrl}" style="display:inline-block;margin-top:22px;padding:12px 20px;background:#B94834;color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;">${ctaLabel}</a>
     <p style="margin:22px 0 0;font-size:12px;line-height:1.6;color:#8a94a0;">
       Kamu menerima email ini karena tergabung di tabungan tersebut.
     </p>

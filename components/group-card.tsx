@@ -24,7 +24,7 @@ export const GroupCard = ({
   return (
     <Link
       href={`/g/${group.group_id}`}
-      className="ink-card focus-visible:ring-ring active:bg-muted/40 flex gap-3.5 rounded-3xl p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      className="ink-card focus-visible:ring-ring active:bg-muted/40 flex gap-3.5 rounded-lg p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
     >
       {hasGoal ? (
         <ProgressRing value={Number(group.progress ?? 0)} />

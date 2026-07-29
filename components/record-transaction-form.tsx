@@ -90,7 +90,7 @@ export const RecordTransactionForm = ({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col gap-5.5 px-4 pt-5.5 pb-2">
+      <div className="flex flex-1 flex-col gap-5.5 px-4 pt-5.5 pb-28">
         <div className="flex flex-col gap-2">
           <AmountInput
             id="amount"

@@ -44,7 +44,7 @@ export const EditGroupForm = ({
 
   return (
     <form action={onSubmit} className="flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col gap-5.5 px-4 pt-5.5 pb-2">
+      <div className="flex flex-1 flex-col gap-5.5 px-4 pt-5.5 pb-28">
         <div className="flex flex-col gap-2.5">
           <Label htmlFor="name" className="text-[13px] font-bold">
             Nama tabungan
@@ -53,7 +53,7 @@ export const EditGroupForm = ({
             id="name"
             name="name"
             required
-            maxLength={80}
+            maxLength={50}
             autoComplete="off"
             defaultValue={name}
             className="bg-card h-[52px] rounded-2xl border-0 text-[15px] font-semibold shadow-[0_0_0_1px_var(--border)]"

@@ -86,7 +86,7 @@ const GroupPage = async ({
             <div className="mt-4 flex items-center gap-2.5">
               <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-white/16">
                 <div
-                  className="bg-ink-accent absolute inset-y-0 left-0 rounded-full"
+                  className="bg-ink-progress absolute inset-y-0 left-0 rounded-full"
                   style={{ width: `${progress * 100}%` }}
                 />
               </div>
@@ -119,7 +119,7 @@ const GroupPage = async ({
         </TabPill>
       </nav>
 
-      <div className="flex-1 px-4 pt-3.5 pb-2">
+      <div className="flex-1 px-4 pt-3.5 pb-28">
         {activeTab === "history" ? (
           <HistoryList
             rows={feed ?? []}
@@ -170,7 +170,7 @@ const GroupPage = async ({
 }
 
 const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex-1 rounded-2xl bg-white/10 px-3 py-2.5">
+  <div className="flex-1 rounded-lg bg-white/10 px-3 py-2.5">
     <dt className="text-ink-muted text-[10px] font-semibold tracking-[0.05em] uppercase">
       {label}
     </dt>

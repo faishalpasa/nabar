@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { formatPlain, formatShort, parseAmount } from "@/lib/format"
+import { formatPlain, formatShort, MAX_AMOUNT, parseAmount } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -44,8 +44,9 @@ export const AmountInput = ({
   const display = current === 0 ? "" : formatPlain(current)
 
   const set = (next: number) => {
-    if (controlled) onValueChange(next)
-    else setInternal(next)
+    const clamped = Math.min(next, MAX_AMOUNT)
+    if (controlled) onValueChange(clamped)
+    else setInternal(clamped)
   }
 
   return (

@@ -1,7 +1,7 @@
 import { CreateGroupForm } from "@/components/create-group-form"
 import { InkHeader } from "@/components/ink-header"
 
-export const metadata = { title: "Buat tabungan · Nabung Bareng" }
+export const metadata = { title: "Buat tabungan · Nabar" }
 
 const NewGroupPage = () => (
   <main className="flex flex-1 flex-col">

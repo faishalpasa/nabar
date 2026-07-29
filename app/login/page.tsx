@@ -1,7 +1,7 @@
 import { BrandMark } from "@/components/brand"
 import { GoogleSignInButton } from "@/components/google-sign-in-button"
 
-export const metadata = { title: "Masuk · Nabung Bareng" }
+export const metadata = { title: "Masuk · Nabar" }
 
 const USES = ["Kas RT", "Patungan liburan", "Kado"]
 

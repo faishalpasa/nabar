@@ -11,7 +11,7 @@ import { formatRupiah, initials } from "@/lib/format"
 import { createClient, getUser } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
-export const metadata = { title: "Tabungan saya · Nabung Bareng" }
+export const metadata = { title: "Tabungan saya · Nabar" }
 
 const HomePage = async () => {
   const user = await getUser()
@@ -41,7 +41,12 @@ const HomePage = async () => {
   const displayName = user?.displayName ?? "Kamu"
   const avatarUrl = user?.avatarUrl ?? undefined
 
-  const total = (groups ?? []).reduce((sum, g) => sum + Number(g.balance), 0)
+  // Kontribusi pribadi, bukan saldo total tiap tabungan (yang juga berisi
+  // setoran member lain) — gross per member_contributions, tidak dikurangi
+  // withdrawal, sesuai business rule di supabase/migrations/20260728120300_views.sql.
+  const total = (members ?? [])
+    .filter((m) => m.user_id === user?.id)
+    .reduce((sum, m) => sum + Number(m.total_contributed), 0)
   const pending = (groups ?? []).reduce((sum, g) => sum + g.pending_count, 0)
   const isEmpty = !groups || groups.length === 0
 
@@ -97,7 +102,7 @@ const HomePage = async () => {
         )}
       </header>
 
-      <div className="flex-1 px-4 pt-5 pb-2">
+      <div className="flex-1 px-4 pt-5 pb-28">
         {error ? (
           <p className="bg-bad-surface text-bad rounded-2xl px-4 py-3 text-sm">
             Gagal memuat tabungan: {error.message}

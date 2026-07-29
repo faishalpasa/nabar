@@ -147,7 +147,7 @@ export const HistoryList = ({
       {awaiting.map((tx) => (
         <div
           key={tx.id}
-          className="bg-card mb-3 rounded-[22px] p-3.5 shadow-[0_0_0_1.5px_oklch(0.83_0.10_78)]"
+          className="bg-card mb-3 rounded-lg p-3.5 shadow-[0_0_0_1.5px_oklch(0.83_0.10_78)]"
         >
           <div className="flex items-center gap-2.5">
             <span
@@ -209,7 +209,7 @@ export const HistoryList = ({
           <h3 className="text-muted-foreground mt-5 mb-2 text-[11px] font-bold tracking-[0.1em] uppercase">
             {month.label}
           </h3>
-          <ul className="ink-card overflow-hidden rounded-[22px]">
+          <ul className="ink-card overflow-hidden rounded-lg">
             {month.items.map((tx, i) => (
               <li key={tx.id} className={cn(i > 0 && "border-t")}>
                 <TransactionRow

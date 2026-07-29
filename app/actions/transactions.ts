@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { after } from "next/server"
 
+import { MAX_AMOUNT } from "@/lib/format"
 import { flushNotifications } from "@/lib/notifications"
 import { baseUrl } from "@/lib/request-url"
 import { createClient } from "@/lib/supabase/server"
@@ -117,6 +118,9 @@ export async function editTransaction(
   if (!Number.isFinite(input.amount) || input.amount <= 0) {
     return { error: "Nominal harus lebih dari nol." }
   }
+  if (input.amount > MAX_AMOUNT) {
+    return { error: "Nominal maksimal Rp99 miliar." }
+  }
 
   const patch: TransactionUpdate = { amount: input.amount }
   if (input.proofPath) patch.proof_path = input.proofPath
@@ -148,6 +152,9 @@ export async function recordTransaction(input: {
 
   if (!Number.isFinite(amount) || amount <= 0) {
     return { error: "Nominal harus lebih dari nol." }
+  }
+  if (amount > MAX_AMOUNT) {
+    return { error: "Nominal maksimal Rp99 miliar." }
   }
   if (!proofPath) return { error: "Bukti belum terunggah." }
   if (type === "withdrawal" && !note) {

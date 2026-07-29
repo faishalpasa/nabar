@@ -3,6 +3,9 @@
  * presisi tidak hilang di JSON. Semua helper di sini menerima string | number.
  */
 
+/** Batas atas nominal (setoran, tarikan, target) di seluruh aplikasi. */
+export const MAX_AMOUNT = 99_000_000_000
+
 const rupiah = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",

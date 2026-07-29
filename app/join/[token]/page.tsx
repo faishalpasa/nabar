@@ -11,7 +11,7 @@ import { getUser } from "@/lib/supabase/server"
 import type { InvitationState } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
-export const metadata = { title: "Undangan · Nabung Bareng" }
+export const metadata = { title: "Undangan · Nabar" }
 
 const CTA = "h-[52px] w-full rounded-full text-[15px] font-bold"
 

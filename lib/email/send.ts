@@ -28,7 +28,7 @@ export const emailConfig = () => {
     // Alamat pengirim. Untuk uji coba, Resend menyediakan onboarding@resend.dev
     // tanpa perlu verifikasi domain — tapi hanya bisa mengirim ke email pemilik
     // akun Resend. Untuk mengirim ke member lain, domainmu harus diverifikasi.
-    from: process.env.RESEND_FROM ?? "Nabung Bareng <onboarding@resend.dev>",
+    from: process.env.RESEND_FROM ?? "Nabar <onboarding@resend.dev>",
   }
 }
 

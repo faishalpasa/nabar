@@ -7,8 +7,8 @@ const manifest = (): MetadataRoute.Manifest => ({
     "Catat tabungan dan kas bareng teman, lengkap dengan bukti transfer.",
   start_url: "/",
   display: "standalone",
-  background_color: "#0a3536",
-  theme_color: "#0a3536",
+  background_color: "#083A3D",
+  theme_color: "#083A3D",
   icons: [
     {
       src: "/icons/icon-192.png",

@@ -14,10 +14,10 @@ export type StackedMember = {
  * orang yang sama selalu tampil dengan warna yang sama di seluruh aplikasi.
  */
 const TINTS = [
-  "bg-[oklch(0.90_0.03_187)] text-[oklch(0.35_0.05_195)]",
-  "bg-[oklch(0.93_0.03_78)] text-[oklch(0.45_0.09_68)]",
-  "bg-[oklch(0.93_0.02_320)] text-[oklch(0.45_0.12_320)]",
-  "bg-[oklch(0.92_0.03_158)] text-[oklch(0.40_0.09_160)]",
+  "bg-[oklch(0.90_0.035_175)] text-[oklch(0.32_0.05_200)]",
+  "bg-[oklch(0.93_0.035_32)] text-[oklch(0.47_0.15_32)]",
+  "bg-[oklch(0.93_0.02_200)] text-[oklch(0.32_0.05_200)]",
+  "bg-[oklch(0.945_0.006_240)] text-[oklch(0.53_0.017_240)]",
 ]
 
 export const tintFor = (userId: string) => {

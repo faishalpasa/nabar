@@ -1,39 +1,39 @@
 import { cn } from "@/lib/utils"
 
 /**
- * Logo: celengan disederhanakan jadi lingkaran dengan celah koin di atas dan
- * panah menurun — uang masuk, bukan keluar.
+ * Monogram N final (rebrand "Nabar") — tiga stroke pada currentColor supaya
+ * jalan di atas panel gelap (Mint) maupun kertas putih (Deep Teal), plus koin
+ * yang fill-nya selalu Coral, bukan currentColor: koin adalah satu-satunya
+ * aksen tetap sama di kedua konteks. Lihat
+ * design_handoff_ink/README.md § Assets (section 6a).
  */
 export const BrandMark = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 40 40"
+    fill="none"
     role="img"
     aria-label="Nabar"
     className={cn("size-12", className)}
   >
-    <circle
-      cx="20"
-      cy="20"
-      r="17"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-    />
     <path
-      d="M20 27.5V13.5M20 13.5c-4 0-5.6-4-5.6-4M20 13.5c4 0 5.6-4 5.6-4"
-      fill="none"
+      d="M11 31V12"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="5"
       strokeLinecap="round"
     />
     <path
-      d="M14.5 22.5 20 28l5.5-5.5"
-      fill="none"
+      d="m11 12 16 17"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="5"
       strokeLinecap="round"
-      strokeLinejoin="round"
     />
+    <path
+      d="M27 29v-9"
+      stroke="currentColor"
+      strokeWidth="5"
+      strokeLinecap="round"
+    />
+    <circle cx="27" cy="11" r="4.4" fill="var(--nb-coral)" />
   </svg>
 )
 
