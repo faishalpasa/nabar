@@ -1,5 +1,6 @@
 "use client"
 
+import { Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 
@@ -20,6 +21,9 @@ type TransactionDetailDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   tx: TransactionFeedRow | null
+  /** Owner tabungan boleh menghapus transaksi apa pun di grupnya. */
+  isOwner: boolean
+  onRequestDelete: (tx: TransactionFeedRow) => void
 }
 
 const STATUS_TONE = {
@@ -40,6 +44,8 @@ export const TransactionDetailDrawer = ({
   open,
   onOpenChange,
   tx,
+  isOwner,
+  onRequestDelete,
 }: TransactionDetailDrawerProps) => {
   if (!tx) return null
 
@@ -97,7 +103,7 @@ export const TransactionDetailDrawer = ({
             <ProofPreview key={tx.id} proofPath={tx.proof_path} />
           </div>
 
-          <DrawerFooter className="p-0">
+          <DrawerFooter className="flex-col gap-2.5 p-0">
             <Button
               variant="outline"
               className="bg-background h-[46px] w-full rounded-full font-bold"
@@ -105,6 +111,17 @@ export const TransactionDetailDrawer = ({
             >
               Tutup
             </Button>
+
+            {isOwner ? (
+              <Button
+                variant="outline"
+                className="text-bad hover:bg-bad-surface h-[46px] w-full gap-2 rounded-full border-0 bg-transparent font-bold shadow-none"
+                onClick={() => onRequestDelete(tx)}
+              >
+                <Trash2 className="size-4" strokeWidth={2.2} />
+                Hapus transaksi
+              </Button>
+            ) : null}
           </DrawerFooter>
         </div>
       </DrawerContent>

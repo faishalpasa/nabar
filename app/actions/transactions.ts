@@ -134,6 +134,22 @@ export async function editTransaction(
 }
 
 /**
+ * Owner menghapus transaksi mana pun di tabungannya — bukan cuma miliknya
+ * sendiri, beda dengan editTransaction. Ini soft delete: baris tetap ada di
+ * ledger (trigger transactions_block_delete masih memblokir DELETE
+ * sungguhan) tapi disaring keluar dari saldo, kontribusi, dan riwayat lewat
+ * kolom deleted_at — lihat supabase/migrations/20260730010000_soft_delete_transactions.sql.
+ */
+export async function deleteTransaction(txId: string, groupId: string) {
+  return mutateTransaction(
+    txId,
+    groupId,
+    { deleted_at: new Date().toISOString() },
+    "Kamu tidak punya izin menghapus transaksi ini.",
+  )
+}
+
+/**
  * Mencatat transaksi setelah file bukti berhasil diunggah dari browser.
  *
  * `status`, `created_at`, dan field verifikasi sengaja tidak dikirim — semuanya

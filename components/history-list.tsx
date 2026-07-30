@@ -16,6 +16,7 @@ import { toast } from "sonner"
 
 import {
   approveTransaction,
+  deleteTransaction,
   rejectTransaction,
   unapproveTransaction,
 } from "@/app/actions/transactions"
@@ -63,6 +64,9 @@ export const HistoryList = ({
   const [reason, setReason] = useState("")
   const [editTarget, setEditTarget] = useState<TransactionFeedRow | null>(null)
   const [detailTarget, setDetailTarget] = useState<TransactionFeedRow | null>(
+    null,
+  )
+  const [deleteTarget, setDeleteTarget] = useState<TransactionFeedRow | null>(
     null,
   )
   const [pending, startTransition] = useTransition()
@@ -117,6 +121,24 @@ export const HistoryList = ({
       )
       setReasonTarget(null)
       setReason("")
+      router.refresh()
+    })
+  }
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return
+    const tx = deleteTarget
+
+    startTransition(async () => {
+      const { error } = await deleteTransaction(tx.id, groupId)
+
+      if (error) {
+        toast.error("Gagal menghapus", { description: error })
+        return
+      }
+
+      toast.success("Transaksi dihapus")
+      setDeleteTarget(null)
       router.refresh()
     })
   }
@@ -307,7 +329,49 @@ export const HistoryList = ({
         open={detailTarget !== null}
         onOpenChange={(open) => !open && setDetailTarget(null)}
         tx={detailTarget}
+        isOwner={isOwner}
+        onRequestDelete={(tx) => {
+          setDetailTarget(null)
+          setDeleteTarget(tx)
+        }}
       />
+
+      <Drawer
+        open={deleteTarget !== null}
+        showSwipeHandle
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <DrawerContent>
+          <div className="flex flex-col gap-[18px] overflow-y-auto p-[22px]">
+            <DrawerHeader className="p-0 text-left">
+              <DrawerTitle className="text-base font-extrabold tracking-[-0.02em]">
+                Hapus transaksi ini?
+              </DrawerTitle>
+              <DrawerDescription className="mt-0.5 text-xs">
+                Saldo tabungan langsung diperbarui dan transaksi ini hilang dari
+                riwayat. Tindakan ini tidak bisa dibatalkan.
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <DrawerFooter className="flex-row gap-2.5 p-0">
+              <Button
+                variant="outline"
+                className="bg-background h-[46px] flex-1 rounded-full font-bold"
+                onClick={() => setDeleteTarget(null)}
+              >
+                Batal
+              </Button>
+              <Button
+                disabled={pending}
+                onClick={confirmDelete}
+                className="bg-bad h-[46px] flex-1 rounded-full font-bold text-white hover:bg-[oklch(0.50_0.155_25)]"
+              >
+                {pending ? "Menghapus…" : "Hapus transaksi"}
+              </Button>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </>
   )
 }

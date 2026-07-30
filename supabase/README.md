@@ -76,7 +76,8 @@ Frontend tidak perlu (dan tidak bisa) menentukan hal-hal ini:
 | Transisi status: `pending→verified`, `pending→rejected`, `verified→rejected` | trigger `transactions_guard_update` |
 | `rejected` final — member upload ulang sebagai transaksi baru | tidak ada transisi keluar dari `rejected` |
 | Edit nominal hanya oleh owner, hanya transaksinya sendiri | trigger `transactions_guard_update` |
-| Ledger append-only | trigger `transactions_block_delete`, tanpa policy DELETE |
+| Ledger append-only (hard DELETE tetap diblokir) | trigger `transactions_block_delete`, tanpa policy DELETE |
+| Hapus transaksi = soft delete (`deleted_at`), hanya owner, transaksi apa pun di grupnya | trigger `transactions_guard_update`; disaring dari `group_overview`/`member_contributions`/`transaction_feed` |
 | Bukti harus file yang diunggah sendiri di folder grup itu | trigger `transactions_before_insert` |
 | `created_at` ditentukan server (urutan History tidak bisa dipalsukan) | trigger `transactions_before_insert` |
 | Field verifikasi hanya bergerak bersama perubahan status | trigger `transactions_guard_update` |

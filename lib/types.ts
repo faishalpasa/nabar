@@ -27,6 +27,7 @@ export type TxEventAction =
   | "amount_edited"
   | "note_edited"
   | "proof_edited"
+  | "deleted"
 
 /** State yang dikembalikan RPC get_invitation_preview. */
 export type InvitationState =
@@ -82,6 +83,7 @@ export type TransactionRow = {
   created_at: string
   verified_by: string | null
   verified_at: string | null
+  deleted_at: string | null
 }
 
 export type TransactionEventRow = {
@@ -220,6 +222,7 @@ export type Database = {
           amount?: number
           note?: string | null
           proof_path?: string
+          deleted_at?: string
         }
         Relationships: []
       }
