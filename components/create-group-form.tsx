@@ -52,7 +52,7 @@ export const CreateGroupForm = () => {
   return (
     <form action={onSubmit} className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-5.5 px-4 pt-5.5 pb-28">
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2.5" data-tour-target="new-name">
           <Label htmlFor="name" className="text-[13px] font-bold">
             Nama tabungan
           </Label>
@@ -67,7 +67,7 @@ export const CreateGroupForm = () => {
           />
         </div>
 
-        <fieldset className="flex flex-col gap-2.5">
+        <fieldset className="flex flex-col gap-2.5" data-tour-target="new-type">
           <legend className="mb-2.5 text-[13px] font-bold">
             Jenisnya apa?
           </legend>
@@ -123,7 +123,7 @@ export const CreateGroupForm = () => {
         {/* Kas berkelanjutan tidak boleh punya target — database menolaknya lewat
             constraint, jadi field ini disembunyikan sepenuhnya. */}
         {type === "one_time" ? (
-          <>
+          <div className="flex flex-col gap-5.5" data-tour-target="new-target">
             <AmountInput
               id="goal_amount"
               name="goal_amount"
@@ -156,7 +156,7 @@ export const CreateGroupForm = () => {
                 Boleh diisi tanggalnya saja walau target nominalnya belum tahu.
               </p>
             </div>
-          </>
+          </div>
         ) : null}
       </div>
 
@@ -165,6 +165,7 @@ export const CreateGroupForm = () => {
           type="submit"
           size="lg"
           disabled={pending}
+          data-tour-target="new-submit"
           className="ink-cta bg-ink hover:bg-ink/90 h-[52px] w-full rounded-full text-[15px] font-bold text-white"
         >
           {pending ? "Membuat…" : "Buat tabungan"}

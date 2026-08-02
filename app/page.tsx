@@ -4,6 +4,7 @@ import Link from "next/link"
 import { AccountMenu } from "@/components/account-menu"
 import { type StackedMember } from "@/components/avatar-stack"
 import { BrandLockup } from "@/components/brand"
+import { FtueTrigger } from "@/components/ftue-trigger"
 import { EmptyState, GroupCard } from "@/components/group-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { buttonVariants } from "@/components/ui/button"
@@ -52,6 +53,8 @@ const HomePage = async () => {
 
   return (
     <main className="flex flex-1 flex-col">
+      <FtueTrigger />
+
       <header className="ink-panel px-4 pt-4 pb-6">
         <div className="flex items-center gap-3">
           <div className="flex-1">
@@ -68,17 +71,19 @@ const HomePage = async () => {
           </AccountMenu>
         </div>
 
-        <p className="text-ink-accent mt-6 text-xs font-semibold tracking-[0.06em] uppercase">
-          Total kamu simpan
-        </p>
-        <p
-          className={cn(
-            "tnum mt-1.5 text-4xl leading-[1.05] font-extrabold tracking-[-0.035em]",
-            isEmpty && "text-ink-foreground/45",
-          )}
-        >
-          {formatRupiah(total)}
-        </p>
+        <div data-tour-target="home-total">
+          <p className="text-ink-accent mt-6 text-xs font-semibold tracking-[0.06em] uppercase">
+            Total kamu simpan
+          </p>
+          <p
+            className={cn(
+              "tnum mt-1.5 text-4xl leading-[1.05] font-extrabold tracking-[-0.035em]",
+              isEmpty && "text-ink-foreground/45",
+            )}
+          >
+            {formatRupiah(total)}
+          </p>
+        </div>
 
         {isEmpty ? (
           <p className="text-ink-muted mt-3.5 text-xs">
@@ -112,8 +117,11 @@ const HomePage = async () => {
               Tabungan saya
             </h2>
             <ul className="flex flex-col gap-3">
-              {groups.map((g) => (
-                <li key={g.group_id}>
+              {groups.map((g, index) => (
+                <li
+                  key={g.group_id}
+                  data-tour-target={index === 0 ? "home-card" : undefined}
+                >
                   <GroupCard
                     group={g}
                     members={byGroup.get(g.group_id) ?? []}
@@ -129,6 +137,7 @@ const HomePage = async () => {
       <div className="ink-dock">
         <Link
           href="/new"
+          data-tour-target="home-cta"
           className={cn(
             buttonVariants({ size: "lg" }),
             "ink-cta bg-ink hover:bg-ink/90 h-[52px] w-full gap-2 rounded-full text-[15px] font-bold text-white",

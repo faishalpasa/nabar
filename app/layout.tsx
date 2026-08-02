@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next"
 import { Plus_Jakarta_Sans, Geist_Mono, Outfit } from "next/font/google"
 
+import { TourProvider } from "@/app/providers"
 import { PullToRefresh } from "@/components/pull-to-refresh"
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 import { RegisterServiceWorker } from "@/components/register-service-worker"
+import { TourSpotlight } from "@/components/tour-spotlight"
 import { Toaster } from "@/components/ui/sonner"
 
 import "./globals.css"
@@ -53,12 +55,15 @@ const RootLayout = ({
     className={`${jakarta.variable} ${geistMono.variable} ${outfit.variable} h-full antialiased`}
   >
     <body className="bg-background min-h-full">
-      <div className="app-frame">
-        <PullToRefresh>{children}</PullToRefresh>
-      </div>
-      <Toaster position="top-center" />
-      <PWAInstallPrompt />
-      <RegisterServiceWorker />
+      <TourProvider>
+        <div className="app-frame">
+          <PullToRefresh>{children}</PullToRefresh>
+        </div>
+        <Toaster position="top-center" />
+        <PWAInstallPrompt />
+        <RegisterServiceWorker />
+        <TourSpotlight />
+      </TourProvider>
     </body>
   </html>
 )
