@@ -1,10 +1,11 @@
 "use client"
 
-import { ChevronRight, LogOut, Sparkles } from "lucide-react"
+import { LogOut, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { useTour } from "@/app/providers"
+import { MenuRowContent } from "@/components/menu-row"
 import { Button } from "@/components/ui/button"
 import {
   Drawer,
@@ -17,21 +18,6 @@ import {
 } from "@/components/ui/drawer"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-
-type RowContentProps = {
-  icon: typeof Sparkles
-  label: string
-}
-
-const RowContent = ({ icon: Icon, label }: RowContentProps) => (
-  <span className="flex flex-1 items-center gap-3 py-3.5 text-left">
-    <span className="bg-muted text-muted-foreground grid size-9 shrink-0 place-items-center rounded-xl">
-      <Icon className="size-[18px]" strokeWidth={2.2} />
-    </span>
-    <span className="flex-1 text-sm font-bold">{label}</span>
-    <ChevronRight className="text-muted-foreground size-[18px] shrink-0" />
-  </span>
-)
 
 export const ProfileMenu = () => {
   const router = useRouter()
@@ -59,7 +45,7 @@ export const ProfileMenu = () => {
         className="flex w-full items-center"
         data-test-id="profile_button_show_guide"
       >
-        <RowContent icon={Sparkles} label="Munculkan Panduan" />
+        <MenuRowContent icon={Sparkles} label="Munculkan Panduan" />
       </button>
 
       <Drawer open={logoutOpen} showSwipeHandle onOpenChange={setLogoutOpen}>
@@ -67,7 +53,7 @@ export const ProfileMenu = () => {
           className={cn("flex w-full items-center border-t")}
           data-test-id="profile_button_logout"
         >
-          <RowContent icon={LogOut} label="Logout" />
+          <MenuRowContent icon={LogOut} label="Logout" />
         </DrawerTrigger>
 
         <DrawerContent data-test-id="profile_dialog_logout_confirm">

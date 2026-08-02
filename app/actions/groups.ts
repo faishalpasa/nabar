@@ -99,3 +99,30 @@ export async function updateGroup(
   revalidatePath("/")
   redirect(`/g/${groupId}`)
 }
+
+/**
+ * Soft delete — hard delete tidak mungkin karena groups -> transactions
+ * pakai ON DELETE CASCADE, sementara transactions_block_delete menolak semua
+ * DELETE demi ledger append-only (lihat migration soft_delete_groups). Owner
+ * mengisi deleted_at, lalu tabungannya hilang dari group_overview untuk semua
+ * orang, termasuk owner-nya sendiri.
+ */
+export async function deleteGroup(groupId: string): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  // PENTING: RLS menolak update yang bukan milik owner dengan MENCOCOKKAN 0
+  // BARIS, bukan error — .select() lalu cek panjangnya, jangan cuma cek error.
+  const { data, error } = await supabase
+    .from("groups")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", groupId)
+    .select("id")
+
+  if (error) return { error: error.message }
+  if (!data || data.length === 0) {
+    return { error: "Kamu tidak punya izin menghapus tabungan ini." }
+  }
+
+  revalidatePath("/")
+  redirect("/")
+}

@@ -1,7 +1,8 @@
-import { ArrowDownToLine, ArrowUpFromLine, Pencil } from "lucide-react"
+import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
+import { GroupHeaderActions } from "@/app/g/[id]/_components/group-header-actions"
 import { HistoryList } from "@/components/history-list"
 import { InkHeader, InkLabel } from "@/components/ink-header"
 import { InviteButton } from "@/components/invite-button"
@@ -64,13 +65,7 @@ const GroupPage = async ({
         backHref="/"
         action={
           isOwner ? (
-            <Link
-              href={`/g/${id}/edit`}
-              aria-label="Edit tabungan"
-              className="focus-visible:ring-ring grid size-8 place-items-center rounded-full bg-white/14 focus-visible:ring-2 focus-visible:outline-none"
-            >
-              <Pencil className="size-4" strokeWidth={2.2} />
-            </Link>
+            <GroupHeaderActions groupId={id} groupName={group.name} />
           ) : undefined
         }
       >

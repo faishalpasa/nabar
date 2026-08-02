@@ -29,7 +29,7 @@ export const GroupCard = ({
       {hasGoal ? (
         <ProgressRing value={Number(group.progress ?? 0)} />
       ) : (
-        <span className="bg-accent text-accent-foreground grid size-[52px] shrink-0 place-items-center rounded-[18px]">
+        <span className="bg-accent text-accent-foreground grid size-[52px] shrink-0 place-items-center rounded-full">
           <Repeat className="size-[22px]" />
         </span>
       )}

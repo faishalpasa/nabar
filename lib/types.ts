@@ -59,6 +59,7 @@ export type GroupRow = {
   goal_deadline: string | null
   owner_id: string
   created_at: string
+  deleted_at: string | null
 }
 
 export type MembershipRow = {
@@ -197,6 +198,7 @@ export type Database = {
           name?: string
           goal_amount?: number | null
           goal_deadline?: string | null
+          deleted_at?: string
         }
         Relationships: []
       }
