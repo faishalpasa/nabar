@@ -1,9 +1,8 @@
 "use client"
 
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { toast } from "sonner"
 
 import { useTour } from "@/app/providers"
 import { Button } from "@/components/ui/button"
@@ -14,7 +13,6 @@ const PAD = 6
 export const TourSpotlight = () => {
   const { status, step, next, skip, finish } = useTour()
   const pathname = usePathname()
-  const router = useRouter()
   const [rect, setRect] = useState<DOMRect | null>(null)
   const [viewport, setViewport] = useState({ width: 0, height: 0 })
   const targetElRef = useRef<HTMLElement | null>(null)
@@ -75,15 +73,14 @@ export const TourSpotlight = () => {
 
   const stepIndex = TOUR_STEPS.findIndex((s) => s.id === step.id)
   const isLastStep = stepIndex === TOUR_STEPS.length - 1
-  // Step di mana step BERIKUTNYA hidup di halaman lain, dan tidak ada elemen
-  // asli di halaman ini yang otomatis membawa ke sana — "Lanjut" di sini
-  // harus benar-benar memicu perpindahan (klik elemen asli, atau navigasi),
-  // bukan cuma memajukan index. Kalau cuma next(), skip-until-valid effect di
-  // atas cuma akan menyembunyikan tur sampai user pindah halaman sendiri.
-  const isNavStep =
-    step.id === "home-cta" ||
-    step.id === "new-submit" ||
-    step.id === "detail-actions"
+  // "home-cta" adalah satu-satunya step di mana step BERIKUTNYA hidup di
+  // halaman lain ("/new") dan cuma elemen aslinya (Link) yang bisa membawa
+  // ke sana — "Lanjut" di sini mengklik elemen itu, bukan cuma next(), atau
+  // skip-until-valid effect di atas cuma akan menyembunyikan tur sampai user
+  // pindah halaman sendiri. Tur sengaja berhenti di "new-submit" (lihat
+  // lib/tour/steps.ts) tanpa pernah mengklik tombolnya — biar user yang
+  // benar-benar memutuskan kapan tabungannya dibuat.
+  const isNavStep = step.id === "home-cta"
 
   const target = {
     top: rect.top - PAD,
@@ -176,29 +173,7 @@ export const TourSpotlight = () => {
             type="button"
             size="sm"
             onClick={() => {
-              if (step.id === "detail-actions") {
-                // Setor/Tarik tidak membawa balik ke home — step berikutnya
-                // ("home-total") ada di sana, jadi navigasi eksplisit.
-                router.push("/")
-                return
-              }
-
               if (isNavStep) {
-                // Kalau elemennya submit button di dalam form yang belum
-                // valid (mis. nama tabungan belum diisi), jangan klik —
-                // itu memicu bubble validasi native browser yang aneh di
-                // dalam overlay tur. Arahkan balik ke field yang bermasalah.
-                const form = targetElRef.current?.closest("form")
-                if (form && !form.checkValidity()) {
-                  const firstInvalid =
-                    form.querySelector<HTMLElement>(":invalid")
-                  firstInvalid?.scrollIntoView({ block: "center" })
-                  firstInvalid?.focus()
-                  toast.error("Lengkapi dulu formnya", {
-                    description: "Ada field wajib yang belum diisi.",
-                  })
-                  return
-                }
                 targetElRef.current?.click()
               } else if (isLastStep) {
                 finish()

@@ -74,7 +74,7 @@ const GroupPage = async ({
           ) : undefined
         }
       >
-        <div className="mt-5" data-tour-target="detail-saldo">
+        <div className="mt-5">
           <InkLabel>Saldo terkumpul</InkLabel>
           <p className="tnum mt-1.5 text-[34px] leading-[1.05] font-extrabold tracking-[-0.035em]">
             {formatRupiah(group.balance)}
@@ -103,14 +103,14 @@ const GroupPage = async ({
           </>
         ) : null}
 
-        <dl className="mt-4.5 flex gap-2" data-tour-target="detail-stats">
+        <dl className="mt-4.5 flex gap-2">
           <Stat label="Setoran" value={formatRupiah(group.total_deposits)} />
           <Stat label="Ditarik" value={formatRupiah(group.total_withdrawals)} />
           <Stat label="Member" value={String(group.member_count)} />
         </dl>
       </InkHeader>
 
-      <nav className="flex gap-1.5 px-4 pt-4" data-tour-target="detail-tabs">
+      <nav className="flex gap-1.5 px-4 pt-4">
         <TabPill href={`/g/${id}`} active={activeTab === "history"}>
           Riwayat
         </TabPill>
@@ -132,7 +132,7 @@ const GroupPage = async ({
         )}
       </div>
 
-      <div className="ink-dock flex gap-2" data-tour-target="detail-actions">
+      <div className="ink-dock flex gap-2">
         {activeTab === "member" ? (
           isOwner ? (
             <InviteButton groupId={id} />

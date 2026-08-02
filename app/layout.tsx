@@ -39,6 +39,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // maximumScale 1 mencegah Safari iOS auto-zoom saat sebuah input di-fokus
+  // (perilaku bawaan iOS untuk field dengan font-size < 16px) — tanpa
+  // userScalable: false, jadi pinch-zoom manual tetap jalan untuk aksesibilitas.
+  maximumScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#083A3D" },
     { media: "(prefers-color-scheme: dark)", color: "#062a2c" },

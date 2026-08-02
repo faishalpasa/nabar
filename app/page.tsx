@@ -71,7 +71,7 @@ const HomePage = async () => {
           </AccountMenu>
         </div>
 
-        <div data-tour-target="home-total">
+        <div>
           <p className="text-ink-accent mt-6 text-xs font-semibold tracking-[0.06em] uppercase">
             Total kamu simpan
           </p>
@@ -117,11 +117,8 @@ const HomePage = async () => {
               Tabungan saya
             </h2>
             <ul className="flex flex-col gap-3">
-              {groups.map((g, index) => (
-                <li
-                  key={g.group_id}
-                  data-tour-target={index === 0 ? "home-card" : undefined}
-                >
+              {groups.map((g) => (
+                <li key={g.group_id}>
                   <GroupCard
                     group={g}
                     members={byGroup.get(g.group_id) ?? []}
