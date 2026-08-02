@@ -2,8 +2,11 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
 
 import { MAX_AMOUNT } from "@/lib/format"
+import { notifyGroupDeleted } from "@/lib/notifications"
+import { baseUrl } from "@/lib/request-url"
 import { createClient } from "@/lib/supabase/server"
 import type { GroupType } from "@/lib/types"
 
@@ -116,7 +119,7 @@ export async function deleteGroup(groupId: string): Promise<ActionResult> {
     .from("groups")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", groupId)
-    .select("id")
+    .select("id, name, owner_id")
 
   if (error) return { error: error.message }
   if (!data || data.length === 0) {
@@ -124,5 +127,14 @@ export async function deleteGroup(groupId: string): Promise<ActionResult> {
   }
 
   revalidatePath("/")
+
+  // owner_id dipakai sebagai actorId supaya owner (pelaku hapus) tidak ikut
+  // dikabari — dia sudah tahu, karena dia sendiri yang menghapus.
+  const group = data[0]
+  const url = await baseUrl()
+  after(async () => {
+    await notifyGroupDeleted(groupId, group.name, group.owner_id, url)
+  })
+
   redirect("/")
 }

@@ -1,7 +1,7 @@
 import "server-only"
 
 import { emailConfig, sendEmail } from "@/lib/email/send"
-import { renderNotification } from "@/lib/email/templates"
+import { renderGroupDeleted, renderNotification } from "@/lib/email/templates"
 import { createAdminClient } from "@/lib/supabase/admin"
 import type { NotificationTargetRow } from "@/lib/types"
 
@@ -81,4 +81,59 @@ export const flushNotifications = async (baseUrl: string) => {
         .eq("id", event.id)
     }
   }
+}
+
+/**
+ * Kabari member lain (bukan owner yang menghapus) kalau tabungannya sudah
+ * dihapus. Tidak lewat antrean transaction_events seperti flushNotifications
+ * — ini kejadian sekali jalan, dipicu langsung dari deleteGroup lewat
+ * `after()`, sama seperti notifyAfterResponse di app/actions/transactions.ts.
+ */
+export const notifyGroupDeleted = async (
+  groupId: string,
+  groupName: string,
+  actorId: string,
+  homeUrl: string,
+) => {
+  if (!emailConfig()) return
+
+  const admin = createAdminClient()
+  if (!admin) return
+
+  const { data: memberships } = await admin
+    .from("memberships")
+    .select("user_id")
+    .eq("group_id", groupId)
+    .eq("status", "active")
+    .neq("user_id", actorId)
+
+  const memberIds = (memberships ?? []).map((m) => m.user_id)
+  if (memberIds.length === 0) return
+
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("email")
+    .in("id", memberIds)
+
+  const emails = (profiles ?? [])
+    .map((p) => p.email)
+    .filter((email): email is string => Boolean(email))
+
+  const mail = renderGroupDeleted(groupName, homeUrl)
+
+  await Promise.all(
+    emails.map(async (email) => {
+      const result = await sendEmail({
+        to: email,
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
+      })
+
+      if (!result.ok) {
+        // eslint-disable-next-line no-console -- pengiriman latar belakang: tanpa log, kegagalan tidak terlihat sama sekali
+        console.error(`[notifikasi] gagal kirim ke ${email}: ${result.error}`)
+      }
+    }),
+  )
 }

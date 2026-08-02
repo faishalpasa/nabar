@@ -108,3 +108,27 @@ export const renderNotification = (
       }
   }
 }
+
+/**
+ * Bukan berbasis transaction_events seperti renderNotification — tabungan yang
+ * dihapus tidak diketuk trigger transaksi, jadi dipanggil langsung dari
+ * deleteGroup lewat notifyGroupDeleted, bukan lewat antrean flushNotifications.
+ */
+export const renderGroupDeleted = (
+  groupName: string,
+  homeUrl: string,
+): { subject: string; html: string; text: string } => {
+  const group = escape(groupName)
+
+  return {
+    subject: `Tabungan ${groupName} sudah dihapus`,
+    html: layout(
+      `${group} sudah dihapus`,
+      row("Tabungan", `<strong>${group}</strong>`) +
+        `<p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:#3e4c59;">Owner menghapus tabungan ini. Riwayat dan saldonya sudah tidak bisa diakses lagi.</p>`,
+      homeUrl,
+      "Buka Nabar",
+    ),
+    text: `Tabungan ${groupName} sudah dihapus oleh owner-nya. Riwayat dan saldonya sudah tidak bisa diakses lagi.\n\nBuka: ${homeUrl}`,
+  }
+}
