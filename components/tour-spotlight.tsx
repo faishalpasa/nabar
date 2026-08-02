@@ -1,8 +1,9 @@
 "use client"
 
-import { usePathname } from "next/navigation"
-import { useLayoutEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { toast } from "sonner"
 
 import { useTour } from "@/app/providers"
 import { Button } from "@/components/ui/button"
@@ -13,8 +14,10 @@ const PAD = 6
 export const TourSpotlight = () => {
   const { status, step, next, skip, finish } = useTour()
   const pathname = usePathname()
+  const router = useRouter()
   const [rect, setRect] = useState<DOMRect | null>(null)
   const [viewport, setViewport] = useState({ width: 0, height: 0 })
+  const targetElRef = useRef<HTMLElement | null>(null)
 
   // Skip-until-valid (lompat step yang halamannya belum sampai, atau yang
   // elemennya tidak dirender — mis. field target/tanggal untuk tabungan
@@ -52,6 +55,8 @@ export const TourSpotlight = () => {
       return
     }
 
+    targetElRef.current = el
+
     const updateRect = () => {
       setRect(el.getBoundingClientRect())
       setViewport({ width: window.innerWidth, height: window.innerHeight })
@@ -70,11 +75,15 @@ export const TourSpotlight = () => {
 
   const stepIndex = TOUR_STEPS.findIndex((s) => s.id === step.id)
   const isLastStep = stepIndex === TOUR_STEPS.length - 1
-  // Cuma step yang elemen aslinya benar-benar pindah ke halaman step
-  // berikutnya yang boleh tanpa tombol "Lanjut" — Setor/Tarik di
-  // "detail-actions" membawa ke halaman catat transaksi, bukan balik ke
-  // home, jadi step itu tetap butuh tombol eksplisit.
-  const isNavStep = step.id === "home-cta" || step.id === "new-submit"
+  // Step di mana step BERIKUTNYA hidup di halaman lain, dan tidak ada elemen
+  // asli di halaman ini yang otomatis membawa ke sana — "Lanjut" di sini
+  // harus benar-benar memicu perpindahan (klik elemen asli, atau navigasi),
+  // bukan cuma memajukan index. Kalau cuma next(), skip-until-valid effect di
+  // atas cuma akan menyembunyikan tur sampai user pindah halaman sendiri.
+  const isNavStep =
+    step.id === "home-cta" ||
+    step.id === "new-submit" ||
+    step.id === "detail-actions"
 
   const target = {
     top: rect.top - PAD,
@@ -91,20 +100,24 @@ export const TourSpotlight = () => {
   const showBelow = viewport.height - target.bottom > 220 || target.top < 220
 
   return createPortal(
-    <div className="fixed inset-0 z-[70]" data-test-id="tour_overlay_active">
+    <div
+      className="pointer-events-none fixed inset-0 z-[70]"
+      data-test-id="tour_overlay_active"
+    >
       {/* Empat panel dim yang mengelilingi target, bukan satu backdrop utuh —
-          supaya elemen di dalam cutout tetap bisa diketuk langsung, tidak
-          tertutup lapisan apa pun. */}
+          supaya elemen di dalam cutout tetap bisa diketuk langsung. Wrapper-nya
+          sendiri pointer-events-none, cuma panel & tooltip ini yang aktif,
+          supaya area cutout benar-benar tembus ke elemen asli di bawahnya. */}
       <div
-        className="absolute inset-x-0 top-0 bg-black/70"
+        className="pointer-events-auto absolute inset-x-0 top-0 bg-black/70"
         style={{ height: Math.max(target.top, 0) }}
       />
       <div
-        className="absolute inset-x-0 bottom-0 bg-black/70"
+        className="pointer-events-auto absolute inset-x-0 bottom-0 bg-black/70"
         style={{ top: target.bottom }}
       />
       <div
-        className="absolute left-0 bg-black/70"
+        className="pointer-events-auto absolute left-0 bg-black/70"
         style={{
           top: target.top,
           height: target.bottom - target.top,
@@ -112,7 +125,7 @@ export const TourSpotlight = () => {
         }}
       />
       <div
-        className="absolute right-0 bg-black/70"
+        className="pointer-events-auto absolute right-0 bg-black/70"
         style={{
           top: target.top,
           height: target.bottom - target.top,
@@ -131,7 +144,7 @@ export const TourSpotlight = () => {
       />
 
       <div
-        className="bg-popover text-popover-foreground absolute flex flex-col gap-2.5 rounded-2xl p-4 shadow-lg"
+        className="bg-popover text-popover-foreground pointer-events-auto absolute flex flex-col gap-2.5 rounded-2xl p-4 shadow-lg"
         style={{
           left: tooltipLeft,
           width: tooltipWidth,
@@ -159,18 +172,46 @@ export const TourSpotlight = () => {
             Lewati tur
           </Button>
 
-          {isNavStep ? null : (
-            <Button
-              type="button"
-              size="sm"
-              onClick={isLastStep ? finish : next}
-              data-test-id={
-                isLastStep ? "tour_button_finish" : "tour_button_next"
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              if (step.id === "detail-actions") {
+                // Setor/Tarik tidak membawa balik ke home — step berikutnya
+                // ("home-total") ada di sana, jadi navigasi eksplisit.
+                router.push("/")
+                return
               }
-            >
-              {isLastStep ? "Selesai" : "Lanjut"}
-            </Button>
-          )}
+
+              if (isNavStep) {
+                // Kalau elemennya submit button di dalam form yang belum
+                // valid (mis. nama tabungan belum diisi), jangan klik —
+                // itu memicu bubble validasi native browser yang aneh di
+                // dalam overlay tur. Arahkan balik ke field yang bermasalah.
+                const form = targetElRef.current?.closest("form")
+                if (form && !form.checkValidity()) {
+                  const firstInvalid =
+                    form.querySelector<HTMLElement>(":invalid")
+                  firstInvalid?.scrollIntoView({ block: "center" })
+                  firstInvalid?.focus()
+                  toast.error("Lengkapi dulu formnya", {
+                    description: "Ada field wajib yang belum diisi.",
+                  })
+                  return
+                }
+                targetElRef.current?.click()
+              } else if (isLastStep) {
+                finish()
+              } else {
+                next()
+              }
+            }}
+            data-test-id={
+              isLastStep ? "tour_button_finish" : "tour_button_next"
+            }
+          >
+            {isLastStep ? "Selesai" : "Lanjut"}
+          </Button>
         </div>
       </div>
     </div>,
