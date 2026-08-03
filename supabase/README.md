@@ -59,6 +59,16 @@ transfer orang lain tanpa perlu jadi member.
 **`invitations.expires_at`** — default 14 hari. Tanpa ini, link undangan berlaku
 selamanya.
 
+**`profiles.tier` + `tier_limits`** — belum ada di spec sama sekali; ditambah
+untuk membatasi jumlah tabungan akun free (lihat bagian "Business rule" di
+bawah). Tier murni flag manual: diubah lewat Supabase dashboard, bukan lewat
+UI aplikasi — belum ada alur upgrade/downgrade atau payment gateway. Limit per
+tier sengaja disimpan di tabel config `tier_limits`, bukan hardcode di trigger,
+supaya bisa diubah (mis. free 3 → 5) cukup dengan UPDATE satu baris, tanpa
+migration baru. `profiles.tier` mereferensi `tier_limits.tier` (bukan check
+constraint terpisah) supaya menambah tier baru juga cukup lewat insert baris
+config.
+
 ---
 
 ## Business rule yang dikunci di database
@@ -86,6 +96,7 @@ Frontend tidak perlu (dan tidak bisa) menentukan hal-hal ini:
 | Kas (`ongoing`) tidak boleh punya target/deadline | constraint `groups_ongoing_has_no_goal` |
 | `saldo = SUM(deposit verified) − SUM(withdrawal)` | view `group_overview` |
 | Kontribusi gross, tidak berkurang oleh withdrawal | view `member_contributions` |
+| Akun free maksimal punya N tabungan aktif (N dari config `tier_limits`, saat ini 3); premium tidak dibatasi | trigger `groups_check_tier_limit` |
 
 `user_id` transaksi, `owner_id` grup, dan `invited_by` undangan selalu diambil
 dari `auth.uid()` di trigger, bukan dari payload client — jadi tidak bisa

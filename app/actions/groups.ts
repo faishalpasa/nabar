@@ -47,7 +47,16 @@ export async function createGroup(formData: FormData): Promise<ActionResult> {
     .select("id")
     .single()
 
-  if (error) return { error: error.message }
+  if (error) {
+    // Trigger groups_check_tier_limit melempar "FREE_TIER_LIMIT_REACHED:<n>"
+    // supaya angka limitnya (dari tier_limits, bukan hardcode) bisa ditampilkan
+    // apa adanya di toast — lihat supabase/migrations/20260803010000_tier_limits.sql.
+    const limitReached = error.message.match(/^FREE_TIER_LIMIT_REACHED:(\d+)$/)
+    if (limitReached) {
+      return { error: `Saat ini hanya bisa buat ${limitReached[1]} tabungan` }
+    }
+    return { error: error.message }
+  }
 
   revalidatePath("/")
   redirect(`/g/${data.id}`)

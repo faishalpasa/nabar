@@ -43,12 +43,25 @@ export type InvitationPreview = {
   invited_by_name: string | null
 }
 
+/**
+ * Nilai valid ditentukan oleh tabel `tier_limits` (bukan enum tetap), supaya
+ * tier baru bisa ditambah cukup lewat insert baris config — jadi di-tipekan
+ * `string`, bukan union literal yang bisa basi kalau tier baru ditambah tanpa
+ * ubah kode.
+ */
 export type Profile = {
   id: string
   display_name: string
   avatar_url: string | null
   email: string | null
+  tier: string
   updated_at: string
+}
+
+export type TierLimitRow = {
+  tier: string
+  /** null = tidak dibatasi. */
+  max_groups: number | null
 }
 
 export type GroupRow = {
@@ -239,6 +252,15 @@ export type Database = {
         Row: InvitationRow
         Insert: { group_id: string }
         Update: { status?: "revoked" }
+        Relationships: []
+      }
+      // Read-only dari client (tidak ada policy insert/update/delete — lihat
+      // supabase/migrations/20260803010000_tier_limits.sql), tapi tetap diberi
+      // Insert/Update di tingkat tipe seperti tabel read-only lain di sini.
+      tier_limits: {
+        Row: TierLimitRow
+        Insert: Partial<TierLimitRow>
+        Update: Partial<TierLimitRow>
         Relationships: []
       }
     }
